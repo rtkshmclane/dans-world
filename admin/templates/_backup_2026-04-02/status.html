@@ -1,0 +1,355 @@
+{% extends "base.html" %}
+{% set active_page = "status" %}
+{% block title %}System Status -- Dan's World{% endblock %}
+
+{% block extra_css %}
+<style>
+    .status-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-top: 16px;
+    }
+    @media (max-width: 900px) { .status-grid { grid-template-columns: 1fr; } }
+
+    .status-card {
+        background: white;
+        border: 1px solid var(--aw-gray-200);
+        border-radius: 10px;
+        padding: 20px;
+    }
+
+    .status-card h3 {
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--aw-navy);
+        margin-bottom: 16px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    .full-width { grid-column: 1 / -1; }
+
+    /* Health dots */
+    .health-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid #f3f4f6;
+    }
+    .health-row:last-child { border-bottom: none; }
+
+    .health-name {
+        font-size: 14px;
+        font-weight: 500;
+        color: #374151;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .health-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+    .health-dot.up { background: #22c55e; box-shadow: 0 0 6px rgba(34,197,94,.4); }
+    .health-dot.down { background: #ef4444; box-shadow: 0 0 6px rgba(239,68,68,.4); }
+    .health-dot.unknown { background: #9ca3af; }
+    .health-dot.warn { background: #f59e0b; box-shadow: 0 0 6px rgba(245,158,11,.4); }
+
+    .health-detail {
+        font-size: 12px;
+        color: #6b7280;
+    }
+
+    /* Resource bars */
+    .resource-item {
+        margin-bottom: 14px;
+    }
+    .resource-item:last-child { margin-bottom: 0; }
+
+    .resource-label {
+        display: flex;
+        justify-content: space-between;
+        font-size: 13px;
+        margin-bottom: 4px;
+    }
+    .resource-label .name { font-weight: 500; color: #374151; }
+    .resource-label .value { color: #6b7280; }
+
+    .resource-bar {
+        height: 8px;
+        background: #f3f4f6;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    .resource-fill {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 0.5s ease;
+    }
+    .resource-fill.ok { background: #22c55e; }
+    .resource-fill.warn { background: #f59e0b; }
+    .resource-fill.danger { background: #ef4444; }
+
+    /* Container table */
+    .container-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+    }
+    .container-table th {
+        text-align: left;
+        color: #6b7280;
+        font-weight: 500;
+        padding: 6px 8px;
+        border-bottom: 1px solid #e5e7eb;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+    .container-table td {
+        padding: 8px;
+        border-bottom: 1px solid #f3f4f6;
+        color: #374151;
+    }
+    .container-table tr:last-child td { border-bottom: none; }
+
+    .badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+    .badge.running { background: #dcfce7; color: #166534; }
+    .badge.stopped { background: #fef2f2; color: #991b1b; }
+
+    /* SSL card */
+    .ssl-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        background: #f0fdf4;
+        border-radius: 8px;
+        border: 1px solid #bbf7d0;
+    }
+    .ssl-info.warn {
+        background: #fffbeb;
+        border-color: #fde68a;
+    }
+    .ssl-info.danger {
+        background: #fef2f2;
+        border-color: #fecaca;
+    }
+    .ssl-icon { font-size: 24px; }
+    .ssl-detail .ssl-label { font-size: 13px; font-weight: 600; color: #374151; }
+    .ssl-detail .ssl-value { font-size: 12px; color: #6b7280; }
+
+    /* Active users */
+    .user-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 6px 0;
+        border-bottom: 1px solid #f3f4f6;
+        font-size: 13px;
+    }
+    .user-row:last-child { border-bottom: none; }
+    .user-name { font-weight: 500; color: #374151; }
+    .user-pages { color: #6b7280; }
+    .user-time { color: #9ca3af; font-size: 12px; }
+
+    /* Errors */
+    .error-line {
+        padding: 6px 8px;
+        font-family: "SF Mono", monospace;
+        font-size: 12px;
+        color: #dc2626;
+        border-bottom: 1px solid #fef2f2;
+        word-break: break-all;
+    }
+    .error-line .error-src {
+        color: #9ca3af;
+        font-size: 11px;
+    }
+    .error-line:last-child { border-bottom: none; }
+    .empty-state { color: #9ca3af; font-size: 13px; padding: 16px 0; text-align: center; }
+
+    /* Refresh control */
+    .status-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .status-header h1 { font-size: 22px; color: var(--aw-navy); }
+    .refresh-info { font-size: 12px; color: #9ca3af; }
+    .auto-refresh { display: flex; align-items: center; gap: 8px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="status-header">
+    <h1>System Status</h1>
+    <div class="auto-refresh">
+        <span class="refresh-info" id="last-refresh">Loading...</span>
+        <button class="btn btn-sm btn-secondary" onclick="refreshAll()">Refresh</button>
+    </div>
+</div>
+
+<div class="status-grid">
+    <!-- App Health -->
+    <div class="status-card">
+        <h3>App Health</h3>
+        <div id="health-list">
+            <div class="empty-state">Checking...</div>
+        </div>
+    </div>
+
+    <!-- System Resources -->
+    <div class="status-card">
+        <h3>System Resources</h3>
+        <div id="resources">
+            <div class="empty-state">Loading...</div>
+        </div>
+    </div>
+
+    <!-- Docker Containers -->
+    <div class="status-card">
+        <h3>Docker Containers</h3>
+        <div id="containers">
+            <div class="empty-state">Loading...</div>
+        </div>
+    </div>
+
+    <!-- SSL Certificate -->
+    <div class="status-card">
+        <h3>SSL Certificate</h3>
+        <div id="ssl-info">
+            <div class="empty-state">Checking...</div>
+        </div>
+    </div>
+
+    <!-- Active Users (last hour) -->
+    <div class="status-card">
+        <h3>Active Users (Last Hour)</h3>
+        <div id="active-users">
+            <div class="empty-state">Loading...</div>
+        </div>
+    </div>
+
+    <!-- Recent Errors -->
+    <div class="status-card">
+        <h3>Recent Errors</h3>
+        <div id="recent-errors">
+            <div class="empty-state">Loading...</div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function refreshAll() {
+    fetch('/admin/status/data')
+        .then(r => r.json())
+        .then(data => {
+            renderHealth(data.health || []);
+            renderResources(data.resources || {});
+            renderContainers(data.containers || []);
+            renderSSL(data.ssl || {});
+            renderUsers(data.active_users || []);
+            renderErrors(data.recent_errors || []);
+            document.getElementById('last-refresh').textContent = 'Updated ' + new Date().toLocaleTimeString();
+        })
+        .catch(() => {
+            document.getElementById('last-refresh').textContent = 'Refresh failed';
+        });
+}
+
+function renderHealth(items) {
+    const el = document.getElementById('health-list');
+    if (!items.length) { el.innerHTML = '<div class="empty-state">No endpoints configured</div>'; return; }
+    el.innerHTML = items.map(h => `
+        <div class="health-row">
+            <span class="health-name">
+                <span class="health-dot ${h.status}"></span>
+                ${h.name}
+            </span>
+            <span class="health-detail">${h.detail}</span>
+        </div>
+    `).join('');
+}
+
+function renderResources(res) {
+    const el = document.getElementById('resources');
+    const items = [];
+    if (res.cpu !== undefined) items.push({ name: 'CPU', value: res.cpu + '%', pct: res.cpu });
+    if (res.memory) items.push({ name: 'Memory', value: res.memory.used + ' / ' + res.memory.total, pct: res.memory.pct });
+    if (res.disk_root) items.push({ name: 'Disk /', value: res.disk_root.used + ' / ' + res.disk_root.total, pct: res.disk_root.pct });
+    if (res.disk_data) items.push({ name: 'Disk /mnt/data', value: res.disk_data.used + ' / ' + res.disk_data.total, pct: res.disk_data.pct });
+
+    el.innerHTML = items.map(i => {
+        const cls = i.pct > 90 ? 'danger' : i.pct > 70 ? 'warn' : 'ok';
+        return `<div class="resource-item">
+            <div class="resource-label"><span class="name">${i.name}</span><span class="value">${i.value} (${i.pct}%)</span></div>
+            <div class="resource-bar"><div class="resource-fill ${cls}" style="width:${i.pct}%"></div></div>
+        </div>`;
+    }).join('');
+}
+
+function renderContainers(containers) {
+    const el = document.getElementById('containers');
+    el.innerHTML = `<table class="container-table">
+        <tr><th>Container</th><th>Status</th><th>Uptime</th><th>CPU</th><th>Memory</th></tr>
+        ${containers.map(c => `<tr>
+            <td>${c.name}</td>
+            <td><span class="badge ${c.running ? 'running' : 'stopped'}">${c.running ? 'Running' : 'Stopped'}</span></td>
+            <td>${c.uptime || '-'}</td>
+            <td>${c.cpu || '-'}</td>
+            <td>${c.memory || '-'}</td>
+        </tr>`).join('')}
+    </table>`;
+}
+
+function renderSSL(ssl) {
+    const el = document.getElementById('ssl-info');
+    if (!ssl.expiry) { el.innerHTML = '<div class="empty-state">Could not check SSL</div>'; return; }
+    const cls = ssl.days_left < 7 ? 'danger' : ssl.days_left < 30 ? 'warn' : '';
+    el.innerHTML = `<div class="ssl-info ${cls}">
+        <div class="ssl-detail">
+            <div class="ssl-label">${ssl.issuer || 'Self-signed'}</div>
+            <div class="ssl-value">Expires: ${ssl.expiry} (${ssl.days_left} days left)</div>
+        </div>
+    </div>`;
+}
+
+function renderUsers(users) {
+    const el = document.getElementById('active-users');
+    if (!users.length) { el.innerHTML = '<div class="empty-state">No activity in the last hour</div>'; return; }
+    el.innerHTML = users.map(u => `
+        <div class="user-row">
+            <span class="user-name">${u.user}</span>
+            <span class="user-pages">${u.pages} pages</span>
+            <span class="user-time">${u.last_seen}</span>
+        </div>
+    `).join('');
+}
+
+function renderErrors(errors) {
+    const el = document.getElementById('recent-errors');
+    if (!errors.length) { el.innerHTML = '<div class="empty-state">No recent errors</div>'; return; }
+    el.innerHTML = errors.map(e => `
+        <div class="error-line">
+            <span class="error-src">${e.source}</span> ${e.line}
+        </div>
+    `).join('');
+}
+
+refreshAll();
+setInterval(refreshAll, 30000);
+</script>
+{% endblock %}
