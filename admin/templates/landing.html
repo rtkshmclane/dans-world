@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 {% set active_page = "home" %}
+{% set default_theme = 'pokemon' if (user and user.sub == 'ckraft') else 'ucf' if (user and user.sub == 'dschiappa') else 'default' %}
+{% set is_admin = user and user.sub == 'shmclane' %}
 
 {% block title %}Dan's World of AI Magic{% endblock %}
 
@@ -24,7 +26,6 @@
         pointer-events: none;
     }
 
-    /* Animated grid lines */
     .hero::after {
         content: "";
         position: absolute;
@@ -68,7 +69,6 @@
         font-weight: 400;
     }
 
-    /* Stats ribbon */
     .hero-stats {
         display: flex;
         gap: 32px;
@@ -110,6 +110,14 @@
     @keyframes pulse {
         0%, 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.5); }
         50% { box-shadow: 0 0 0 6px rgba(34,197,94,0); }
+    }
+
+    .hero-emblem {
+        position: absolute;
+        top: 20px;
+        right: 32px;
+        z-index: 2;
+        display: none;
     }
 
     /* ── Section headers ─────────────────────────────────────── */
@@ -162,9 +170,7 @@
     .app-card::before {
         content: "";
         position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
+        top: 0; left: 0; right: 0;
         height: 3px;
         background: linear-gradient(90deg, var(--card-accent, #F37021), transparent);
         opacity: 0;
@@ -179,7 +185,6 @@
 
     .app-card:hover::before { opacity: 1; }
 
-    /* Card accent colors by icon type */
     .app-card.accent-ticket { --card-accent: #7c3aed; }
     .app-card.accent-shield { --card-accent: #db2777; }
     .app-card.accent-chart { --card-accent: #059669; }
@@ -191,21 +196,12 @@
     .app-card.accent-demo { --card-accent: #F37021; }
     .app-card.accent-compliance { --card-accent: #9333ea; }
 
-    .app-card-header {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
+    .app-card-header { display: flex; align-items: center; gap: 12px; }
 
     .app-card-icon {
-        width: 44px;
-        height: 44px;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 20px;
-        flex-shrink: 0;
+        width: 44px; height: 44px; border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 20px; flex-shrink: 0;
     }
 
     .app-card-icon.ticket { background: linear-gradient(135deg, #ede9fe, #ddd6fe); color: #7c3aed; }
@@ -219,37 +215,19 @@
     .app-card-icon.demo { background: linear-gradient(135deg, #ffedd5, #fed7aa); color: #ea580c; }
     .app-card-icon.compliance { background: linear-gradient(135deg, #f3e8ff, #e9d5ff); color: #9333ea; }
 
-    .icon-svg {
-        width: 22px;
-        height: 22px;
-    }
+    .icon-svg { width: 22px; height: 22px; }
 
-    .app-card-title {
-        font-size: 16px;
-        font-weight: 600;
-        color: var(--aw-navy);
-    }
-
-    .app-card p {
-        font-size: 13px;
-        color: var(--aw-gray-600);
-        line-height: 1.5;
-    }
+    .app-card-title { font-size: 16px; font-weight: 600; color: var(--aw-navy); }
+    .app-card p { font-size: 13px; color: var(--aw-gray-600); line-height: 1.5; }
 
     .app-card-footer {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin-top: auto;
-        padding-top: 8px;
+        display: flex; align-items: center; gap: 8px;
+        margin-top: auto; padding-top: 8px;
     }
 
     .author-badge {
-        font-size: 11px;
-        font-weight: 600;
-        padding: 2px 8px;
-        border-radius: 10px;
-        letter-spacing: 0.02em;
+        font-size: 11px; font-weight: 600; padding: 2px 8px;
+        border-radius: 10px; letter-spacing: 0.02em;
     }
 
     .author-badge.sam { background: #dbeafe; color: #1e40af; }
@@ -258,19 +236,109 @@
     .author-badge.andrew { background: #ede9fe; color: #5b21b6; }
 
     .status-pip {
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-        background: #22c55e;
-        margin-left: auto;
-        flex-shrink: 0;
+        width: 6px; height: 6px; border-radius: 50%;
+        background: #22c55e; margin-left: auto; flex-shrink: 0;
     }
     .status-pip.demo { background: #f59e0b; }
+    .status-pip-label { font-size: 11px; color: var(--aw-gray-600); margin-left: -4px; }
 
-    .status-pip-label {
-        font-size: 11px;
-        color: var(--aw-gray-600);
-        margin-left: -4px;
+    /* ── Theme Switcher (shmclane only) ──────────────────────── */
+    .theme-switcher {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 999;
+        display: flex;
+        gap: 6px;
+        background: rgba(27,42,74,0.95);
+        padding: 8px 12px;
+        border-radius: 10px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        backdrop-filter: blur(8px);
+    }
+
+    .theme-btn {
+        padding: 5px 12px;
+        border: 1px solid rgba(255,255,255,0.15);
+        border-radius: 6px;
+        background: transparent;
+        color: rgba(255,255,255,0.7);
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s;
+    }
+
+    .theme-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+    .theme-btn.active { background: var(--aw-orange); color: #fff; border-color: var(--aw-orange); }
+
+    /* ── Pokemon Theme ───────────────────────────────────────── */
+    body.theme-pokemon .hero {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 30%, #0f3460 60%, #e94560 100%) !important;
+    }
+    body.theme-pokemon .hero::before {
+        background:
+            radial-gradient(circle at 15% 80%, rgba(255,203,5,0.15) 0%, transparent 40%),
+            radial-gradient(circle at 85% 30%, rgba(233,69,96,0.12) 0%, transparent 40%) !important;
+    }
+    body.theme-pokemon .hero::after {
+        background-image:
+            radial-gradient(circle 2px, rgba(255,203,5,0.3) 100%, transparent 100%),
+            radial-gradient(circle 1px, rgba(255,255,255,0.15) 100%, transparent 100%) !important;
+        background-size: 80px 80px, 40px 40px !important;
+        animation: starfield 4s linear infinite !important;
+    }
+    @keyframes starfield {
+        0% { transform: translateY(0); }
+        100% { transform: translateY(-80px); }
+    }
+    body.theme-pokemon .hero h1 .accent { color: #FFCB05 !important; }
+    body.theme-pokemon .hero-stat-value .pulse-dot { background: #FFCB05 !important; }
+    body.theme-pokemon .section-label { border-left-color: #e94560 !important; }
+    body.theme-pokemon .section-count { background: #fce4ec !important; color: #e94560 !important; }
+    body.theme-pokemon .app-card:hover { border-color: #FFCB05 !important; }
+    body.theme-pokemon .app-card::before { background: linear-gradient(90deg, #FFCB05, #e94560, transparent) !important; }
+    body.theme-pokemon .hero-emblem.pokemon { display: block; }
+    body.theme-pokemon .app-card {
+        cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='11' fill='%23fff' stroke='%23333' stroke-width='2'/%3E%3Cpath d='M1 12h22' stroke='%23333' stroke-width='2'/%3E%3Ccircle cx='12' cy='12' r='4' fill='%23fff' stroke='%23333' stroke-width='2'/%3E%3Ccircle cx='12' cy='12' r='2' fill='%23333'/%3E%3Crect x='1' y='1' width='22' height='11' rx='11' fill='%23e94560' opacity='0.9'/%3E%3C/svg%3E") 12 12, pointer;
+    }
+
+    .hero-emblem.pokemon svg {
+        width: 64px; height: 64px;
+        animation: pokeSpin 10s linear infinite;
+        opacity: 0.9;
+    }
+    @keyframes pokeSpin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    /* ── UCF Knights Theme ───────────────────────────────────── */
+    body.theme-ucf .hero {
+        background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 30%, #1a1a1a 60%, #BA9B37 100%) !important;
+    }
+    body.theme-ucf .hero::before {
+        background:
+            radial-gradient(circle at 20% 50%, rgba(186,155,55,0.15) 0%, transparent 50%),
+            radial-gradient(circle at 80% 30%, rgba(186,155,55,0.1) 0%, transparent 40%) !important;
+    }
+    body.theme-ucf .hero h1 .accent { color: #BA9B37 !important; }
+    body.theme-ucf .hero-stat-value .pulse-dot { background: #BA9B37 !important; }
+    body.theme-ucf .section-label { border-left-color: #BA9B37 !important; }
+    body.theme-ucf .section-count { background: #f5f0e0 !important; color: #8a7428 !important; }
+    body.theme-ucf .app-card:hover { border-color: #BA9B37 !important; }
+    body.theme-ucf .app-card::before { background: linear-gradient(90deg, #BA9B37, transparent) !important; }
+    body.theme-ucf .hero-emblem.ucf { display: block; }
+
+    .hero-emblem.ucf span {
+        font-size: 56px;
+        opacity: 0.85;
+        animation: knightBounce 3s ease-in-out infinite;
+        display: inline-block;
+    }
+    @keyframes knightBounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-8px); }
     }
 
     /* ── Responsive ──────────────────────────────────────────── */
@@ -280,6 +348,7 @@
         .hero-stats { gap: 20px; flex-wrap: wrap; }
         .hero-stat-value { font-size: 22px; }
         .app-grid { grid-template-columns: 1fr; }
+        .theme-switcher { bottom: 10px; right: 10px; }
     }
 </style>
 {% endblock %}
@@ -298,24 +367,33 @@
 
 <div class="hero">
     <div class="hero-inner">
-        <h1><span class="accent">//</span> Dan's World of AI Magic</h1>
-        <p class="hero-subtitle">CTO Office -- Research, Prototypes & Development</p>
+        <!-- Emblems (shown/hidden by theme class on body) -->
+        <div class="hero-emblem pokemon">
+            <svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="#fff" stroke="#333" stroke-width="4"/><path d="M2 50h96" stroke="#333" stroke-width="4"/><circle cx="50" cy="50" r="16" fill="#fff" stroke="#333" stroke-width="4"/><circle cx="50" cy="50" r="8" fill="#333"/><rect x="2" y="2" width="96" height="48" rx="48" fill="#e94560" opacity="0.9"/></svg>
+        </div>
+        <div class="hero-emblem ucf">
+            <span>&#9876;</span>
+        </div>
+
+        <h1><span class="accent" id="hero-accent">//</span> <span id="hero-title">Dan's World of AI Magic</span></h1>
+        <p class="hero-subtitle" id="hero-subtitle">CTO Office -- Research, Prototypes & Development</p>
+
         <div class="hero-stats">
             <div class="hero-stat">
                 <span class="hero-stat-value">{{ ns.analytics | length }}<span class="pulse-dot"></span></span>
-                <span class="hero-stat-label">Live Apps</span>
+                <span class="hero-stat-label" data-default="Live Apps" data-pokemon="Legendary" data-ucf="Live Apps">Live Apps</span>
             </div>
             <div class="hero-stat">
                 <span class="hero-stat-value">{{ ns.demos | length }}</span>
-                <span class="hero-stat-label">Demos</span>
+                <span class="hero-stat-label" data-default="Demos" data-pokemon="Wild" data-ucf="Demos">Demos</span>
             </div>
             <div class="hero-stat">
                 <span class="hero-stat-value">{{ ns.engineering | length }}</span>
-                <span class="hero-stat-label">Engineering</span>
+                <span class="hero-stat-label" data-default="Engineering" data-pokemon="Rare" data-ucf="Engineering">Engineering</span>
             </div>
             <div class="hero-stat">
                 <span class="hero-stat-value" id="uptime-value">--</span>
-                <span class="hero-stat-label">Uptime</span>
+                <span class="hero-stat-label" data-default="Uptime" data-pokemon="Trainer XP" data-ucf="Uptime">Uptime</span>
             </div>
         </div>
     </div>
@@ -371,7 +449,7 @@
 
 {% if ns.analytics %}
 <div class="section-label">
-    Analytics & Intelligence
+    <span data-default="Analytics & Intelligence" data-pokemon="Legendary Pokemon" data-ucf="Analytics & Intelligence">Analytics & Intelligence</span>
     <span class="section-count">{{ ns.analytics | length }}</span>
 </div>
 <div class="app-grid">
@@ -383,7 +461,7 @@
 
 {% if ns.engineering %}
 <div class="section-label">
-    Engineering Tools
+    <span data-default="Engineering Tools" data-pokemon="Rare Pokemon" data-ucf="Engineering Tools">Engineering Tools</span>
     <span class="section-count">{{ ns.engineering | length }}</span>
 </div>
 <div class="app-grid">
@@ -395,7 +473,7 @@
 
 {% if ns.demos %}
 <div class="section-label">
-    Demos & Presentations
+    <span data-default="Demos & Presentations" data-pokemon="Wild Pokemon" data-ucf="Demos & Presentations">Demos & Presentations</span>
     <span class="section-count">{{ ns.demos | length }}</span>
 </div>
 <div class="app-grid">
@@ -405,11 +483,66 @@
 </div>
 {% endif %}
 
+{% if is_admin %}
+<div class="theme-switcher">
+    <button class="theme-btn" data-theme="default" onclick="setTheme('default')">Default</button>
+    <button class="theme-btn" data-theme="pokemon" onclick="setTheme('pokemon')">Pokemon</button>
+    <button class="theme-btn" data-theme="ucf" onclick="setTheme('ucf')">UCF</button>
+</div>
+{% endif %}
+
 {% endblock %}
 
 {% block extra_js %}
 <script>
-// Fetch uptime from status endpoint
+const THEMES = {
+    default: {
+        accent: '//',
+        title: "Dan's World of AI Magic",
+        subtitle: 'CTO Office -- Research, Prototypes & Development'
+    },
+    pokemon: {
+        accent: '\u26A1',
+        title: "Professor Kraft's Pokemon Lab",
+        subtitle: "Gotta catch 'em all -- Security Analytics Edition"
+    },
+    ucf: {
+        accent: '//',
+        title: "Dan's World of AI Magic",
+        subtitle: 'Charge On -- CTO Office Research & Development -- Go Knights!'
+    }
+};
+
+const DEFAULT_THEME = '{{ default_theme }}';
+
+function setTheme(name) {
+    // Remove all theme classes
+    document.body.classList.remove('theme-pokemon', 'theme-ucf');
+    if (name !== 'default') {
+        document.body.classList.add('theme-' + name);
+    }
+
+    // Update hero text
+    const t = THEMES[name] || THEMES.default;
+    document.getElementById('hero-accent').textContent = t.accent;
+    document.getElementById('hero-title').textContent = t.title;
+    document.getElementById('hero-subtitle').textContent = t.subtitle;
+
+    // Update data-driven labels
+    document.querySelectorAll('[data-' + name + ']').forEach(el => {
+        el.textContent = el.getAttribute('data-' + name);
+    });
+
+    // Update switcher buttons
+    document.querySelectorAll('.theme-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-theme') === name);
+    });
+}
+
+// Apply default theme on load
+setTheme(DEFAULT_THEME);
+
+// Fetch uptime
 fetch('/admin/status/data')
     .then(r => r.json())
     .then(data => {
