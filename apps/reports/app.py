@@ -47,8 +47,9 @@ app.wsgi_app = PrefixMiddleware(app.wsgi_app)
 
 def get_db():
     if "db" not in g:
-        g.db = sqlite3.connect(f"file:{ADMIN_DB_PATH}?mode=ro", uri=True)
+        g.db = sqlite3.connect(ADMIN_DB_PATH)
         g.db.row_factory = sqlite3.Row
+        g.db.execute("PRAGMA query_only = ON")
     return g.db
 
 
