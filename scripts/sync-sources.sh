@@ -67,7 +67,7 @@ for entry in "${APPS[@]}"; do
             (cd "$REPO_DIR" && git pull --ff-only 2>&1) || warn "Pull failed for $REPO -- using existing"
         else
             log "Cloning $REPO..."
-            git clone "git@github.com:${REPO}.git" "$REPO_DIR" 2>&1 || {
+            git clone "https://github.com/${REPO}.git" "$REPO_DIR" 2>&1 || {
                 err "Failed to clone $REPO"
                 continue
             }
