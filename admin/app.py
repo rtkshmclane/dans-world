@@ -852,34 +852,42 @@ def system_status_data():
 
     result = {}
 
-    # --- App Health (dynamically built from registry) ---
+    # --- App Health (check via dw-net from admin container) ---
+    import urllib.request
+    import urllib.error
+
     health = []
     endpoints = [
-        ("Gateway (nginx)", "dw-gateway", "http://localhost:80", "301"),
-        ("Admin (Flask)", "dw-admin", "http://localhost:5050/health", "200"),
+        ("Gateway (nginx)", "gateway", 80, "/", "301"),
+        ("Admin (Flask)", "admin", 5050, "/health", "200"),
     ]
-    # Add containerized apps from registry
     for entry in APP_REGISTRY:
         container = entry.get("container")
         port = entry.get("port")
         health_path = entry.get("health")
         if container and port and health_path:
-            url = f"http://localhost:{port}{health_path}"
-            endpoints.append((entry["name"], container, url, "200"))
-    for name, container, url, expected in endpoints:
+            # Use docker compose service name (container name minus 'dw-' prefix)
+            svc_name = container.replace("dw-", "")
+            endpoints.append((entry["name"], svc_name, port, health_path, "200"))
+
+    for name, host, port, path, expected in endpoints:
         try:
-            out = subprocess.run(
-                ["docker", "exec", container, "curl", "-s", "-o", "/dev/null",
-                 "-w", "%{http_code}", "--max-time", "3", url],
-                capture_output=True, text=True, timeout=8,
-            )
-            code = out.stdout.strip()
+            url = f"http://{host}:{port}{path}"
+            req = urllib.request.Request(url, method="GET")
+            resp = urllib.request.urlopen(req, timeout=5)
+            code = str(resp.status)
+            if code == expected:
+                health.append({"name": name, "status": "up", "detail": f"HTTP {code}"})
+            else:
+                health.append({"name": name, "status": "down", "detail": f"HTTP {code} (expected {expected})"})
+        except urllib.error.HTTPError as e:
+            code = str(e.code)
             if code == expected:
                 health.append({"name": name, "status": "up", "detail": f"HTTP {code}"})
             else:
                 health.append({"name": name, "status": "down", "detail": f"HTTP {code} (expected {expected})"})
         except Exception as e:
-            health.append({"name": name, "status": "down", "detail": str(e)[:60]})
+            health.append({"name": name, "status": "down", "detail": str(e)[:80]})
     result["health"] = health
 
     # --- System Resources ---
