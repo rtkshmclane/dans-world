@@ -894,46 +894,45 @@ def system_status_data():
             health.append({"name": name, "status": "down", "detail": str(e)[:80]})
     result["health"] = health
 
-    # --- System Resources ---
+    # --- System Resources (read from /proc, works inside containers) ---
     resources = {}
     try:
-        # CPU
-        cpu_out = subprocess.run(
-            ["ssh", "-o", "BatchMode=yes", "localhost", "true"],  # skip, use /proc
-            capture_output=True, text=True, timeout=3,
-        )
-        # Read /proc/loadavg for load average
-        load_out = subprocess.run(["cat", "/proc/loadavg"], capture_output=True, text=True, timeout=3)
-        if load_out.returncode == 0:
-            load_1m = float(load_out.stdout.split()[0])
-            # Estimate CPU% from load avg vs nproc
-            nproc_out = subprocess.run(["nproc"], capture_output=True, text=True, timeout=3)
-            ncpu = int(nproc_out.stdout.strip()) if nproc_out.returncode == 0 else 1
-            resources["cpu"] = min(round(load_1m / ncpu * 100, 1), 100)
+        # CPU: load average from /proc/loadavg, core count from /proc/cpuinfo
+        with open("/proc/loadavg") as f:
+            load_1m = float(f.read().split()[0])
+        ncpu = 0
+        with open("/proc/cpuinfo") as f:
+            for line in f:
+                if line.startswith("processor"):
+                    ncpu += 1
+        ncpu = max(ncpu, 1)
+        resources["cpu"] = min(round(load_1m / ncpu * 100, 1), 100)
+        resources["load"] = load_1m
+        resources["ncpu"] = ncpu
 
-        # Memory
-        mem_out = subprocess.run(["free", "-m"], capture_output=True, text=True, timeout=3)
-        if mem_out.returncode == 0:
-            mem_line = mem_out.stdout.splitlines()[1].split()
-            total_mb = int(mem_line[1])
-            used_mb = int(mem_line[2])
-            resources["memory"] = {
-                "total": f"{total_mb}MB",
-                "used": f"{used_mb}MB",
-                "pct": round(used_mb / total_mb * 100) if total_mb else 0,
-            }
+        # Memory from /proc/meminfo (host-level)
+        meminfo = {}
+        with open("/proc/meminfo") as f:
+            for line in f:
+                parts = line.split()
+                if len(parts) >= 2:
+                    meminfo[parts[0].rstrip(":")] = int(parts[1])
+        total_kb = meminfo.get("MemTotal", 0)
+        avail_kb = meminfo.get("MemAvailable", 0)
+        used_kb = total_kb - avail_kb
+        total_mb = total_kb // 1024
+        used_mb = used_kb // 1024
+        resources["memory"] = {
+            "total": f"{total_mb}MB",
+            "used": f"{used_mb}MB",
+            "pct": round(used_mb / total_mb * 100) if total_mb else 0,
+        }
 
-        # Disk /
-        df_root = subprocess.run(["df", "-h", "/"], capture_output=True, text=True, timeout=3)
-        if df_root.returncode == 0:
-            parts = df_root.stdout.splitlines()[1].split()
+        # Disk (df works inside containers, shows host mounts)
+        df_out = subprocess.run(["df", "-h", "/"], capture_output=True, text=True, timeout=3)
+        if df_out.returncode == 0:
+            parts = df_out.stdout.splitlines()[1].split()
             resources["disk_root"] = {"total": parts[1], "used": parts[2], "pct": int(parts[4].rstrip("%"))}
-
-        # Disk /mnt/data
-        df_data = subprocess.run(["df", "-h", "/mnt/data"], capture_output=True, text=True, timeout=3)
-        if df_data.returncode == 0:
-            parts = df_data.stdout.splitlines()[1].split()
-            resources["disk_data"] = {"total": parts[1], "used": parts[2], "pct": int(parts[4].rstrip("%"))}
     except Exception:
         pass
     result["resources"] = resources
