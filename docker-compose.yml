@@ -1,0 +1,64 @@
+version: "3.8"
+
+services:
+  gateway:
+    build: ./gateway
+    container_name: dw-gateway
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./static-sites:/srv/static:ro
+      - ./html-dropzone:/srv/dropzone:ro
+      - ./apps/integration_catalog_dist:/srv/catalog-frontend:ro
+      - ssl-certs:/etc/nginx/ssl:ro
+    depends_on:
+      - apps
+      - admin
+    restart: unless-stopped
+    mem_limit: ${GATEWAY_MEMORY_LIMIT:-128m}
+    networks:
+      - dw-net
+
+  apps:
+    build: ./apps
+    container_name: dw-apps
+    volumes:
+      - ./apps/ticketmaker:/app/ticketmaker
+      - ./apps/detection_catalog:/app/detection_catalog
+      - ./apps/integration_adoption:/app/integration_adoption
+      - ./apps/integration_catalog:/app/integration_catalog
+      - ./apps/cloud_live:/app/cloud_live
+      - ./apps/network_graph:/app/network_graph
+      - ./apps/okta_is:/app/okta_is
+      - ./apps/analytic_stories:/app/analytic_stories
+      - app-data:/app/data
+    env_file:
+      - .env
+    restart: unless-stopped
+    mem_limit: ${APPS_MEMORY_LIMIT:-4g}
+    networks:
+      - dw-net
+
+  admin:
+    build: ./admin
+    container_name: dw-admin
+    volumes:
+      - admin-db:/app/data
+      - ./html-dropzone:/app/dropzone
+      - /var/run/docker.sock:/var/run/docker.sock
+    env_file:
+      - .env
+    restart: unless-stopped
+    mem_limit: ${ADMIN_MEMORY_LIMIT:-512m}
+    networks:
+      - dw-net
+
+volumes:
+  admin-db:
+  app-data:
+  ssl-certs:
+
+networks:
+  dw-net:
+    driver: bridge

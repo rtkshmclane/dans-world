@@ -1,0 +1,491 @@
+{% extends "base.html" %}
+{% set active_page = "logs" %}
+{% block title %}Log Viewer -- Dan's World{% endblock %}
+
+{% block extra_css %}
+<style>
+    .logs-layout {
+        display: grid;
+        grid-template-columns: 220px 1fr;
+        gap: 0;
+        height: calc(100vh - 80px);
+        margin: -20px;
+    }
+
+    /* Sidebar */
+    .log-sidebar {
+        background: #111827;
+        border-right: 1px solid #1f2937;
+        padding: 16px 0;
+        overflow-y: auto;
+    }
+
+    .sidebar-title {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #6b7280;
+        padding: 0 16px;
+        margin-bottom: 8px;
+    }
+
+    .sidebar-title:not(:first-child) { margin-top: 20px; }
+
+    .log-source {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        cursor: pointer;
+        color: #9ca3af;
+        font-size: 13px;
+        transition: background 0.1s, color 0.1s;
+        border: none;
+        background: none;
+        width: 100%;
+        text-align: left;
+        font-family: inherit;
+    }
+
+    .log-source:hover { background: #1f2937; color: #e5e7eb; }
+    .log-source.active { background: #1e3a5f; color: #60a5fa; }
+
+    .source-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    .source-dot.gateway { background: #10b981; }
+    .source-dot.admin { background: #8b5cf6; }
+    .source-dot.app { background: #f59e0b; }
+    .source-dot.access { background: #06b6d4; }
+
+    .source-count {
+        margin-left: auto;
+        font-size: 11px;
+        background: #1f2937;
+        color: #6b7280;
+        padding: 1px 6px;
+        border-radius: 8px;
+    }
+
+    /* Main log area */
+    .log-main {
+        display: flex;
+        flex-direction: column;
+        background: #0d1117;
+        overflow: hidden;
+    }
+
+    .log-toolbar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 16px;
+        background: #161b22;
+        border-bottom: 1px solid #21262d;
+        flex-shrink: 0;
+    }
+
+    .log-toolbar-title {
+        font-weight: 600;
+        font-size: 14px;
+        color: #e5e7eb;
+        min-width: 180px;
+    }
+
+    .log-search {
+        flex: 1;
+        max-width: 400px;
+        padding: 6px 12px;
+        border: 1px solid #30363d;
+        border-radius: 6px;
+        background: #0d1117;
+        color: #e5e7eb;
+        font-size: 13px;
+        font-family: inherit;
+    }
+
+    .log-search:focus { outline: none; border-color: #58a6ff; }
+    .log-search::placeholder { color: #484f58; }
+
+    .toolbar-btn {
+        padding: 5px 12px;
+        border: 1px solid #30363d;
+        border-radius: 6px;
+        background: #21262d;
+        color: #c9d1d9;
+        font-size: 12px;
+        cursor: pointer;
+        font-family: inherit;
+        white-space: nowrap;
+    }
+
+    .toolbar-btn:hover { background: #30363d; border-color: #484f58; }
+    .toolbar-btn.active { background: #1f6feb; border-color: #1f6feb; color: #fff; }
+    .toolbar-btn.danger { color: #f85149; }
+    .toolbar-btn.danger:hover { background: #3d1519; }
+
+    .log-container {
+        flex: 1;
+        overflow-y: auto;
+        padding: 8px 0;
+        font-family: "SF Mono", "Cascadia Code", "Fira Code", "Consolas", monospace;
+        font-size: 12.5px;
+        line-height: 1.6;
+    }
+
+    .log-line {
+        padding: 1px 16px;
+        display: flex;
+        gap: 8px;
+        white-space: pre-wrap;
+        word-break: break-all;
+    }
+
+    .log-line:hover { background: #161b22; }
+    .log-line.hidden { display: none; }
+
+    .log-ts {
+        color: #484f58;
+        flex-shrink: 0;
+        user-select: none;
+    }
+
+    .log-src {
+        flex-shrink: 0;
+        font-size: 10px;
+        font-weight: 700;
+        padding: 1px 6px;
+        border-radius: 3px;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        user-select: none;
+        min-width: 60px;
+        text-align: center;
+    }
+
+    .log-src.gateway { background: #064e3b; color: #6ee7b7; }
+    .log-src.admin { background: #3b0764; color: #c4b5fd; }
+    .log-src.ticketmaker { background: #78350f; color: #fcd34d; }
+    .log-src.detections { background: #7c2d12; color: #fdba74; }
+    .log-src.adoption { background: #064e3b; color: #6ee7b7; }
+    .log-src.catalog { background: #1e3a5f; color: #93c5fd; }
+    .log-src.cloud_live { background: #164e63; color: #67e8f9; }
+    .log-src.network_graph { background: #365314; color: #bef264; }
+    .log-src.okta_is { background: #4a1d96; color: #c4b5fd; }
+    .log-src.access { background: #155e75; color: #22d3ee; }
+    .log-src.error { background: #7f1d1d; color: #fca5a5; }
+
+    .log-msg { color: #c9d1d9; }
+    .log-msg .hl { background: #4a3620; color: #fbbf24; padding: 0 2px; border-radius: 2px; }
+
+    /* Level colors */
+    .log-line.error .log-msg { color: #f85149; }
+    .log-line.warn .log-msg { color: #d29922; }
+    .log-line.info .log-msg { color: #c9d1d9; }
+    .log-line.debug .log-msg { color: #6b7280; }
+
+    /* Access log specific */
+    .log-line.access .log-msg .method { color: #58a6ff; font-weight: 600; }
+    .log-line.access .log-msg .path { color: #7ee787; }
+    .log-line.access .log-msg .status-2xx { color: #3fb950; }
+    .log-line.access .log-msg .status-3xx { color: #d29922; }
+    .log-line.access .log-msg .status-4xx { color: #f85149; }
+    .log-line.access .log-msg .status-5xx { color: #f85149; font-weight: 700; }
+    .log-line.access .log-msg .user { color: #d2a8ff; font-weight: 600; }
+
+    /* Stats bar */
+    .stats-bar {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 6px 16px;
+        background: #161b22;
+        border-top: 1px solid #21262d;
+        font-size: 11px;
+        color: #6b7280;
+        flex-shrink: 0;
+    }
+
+    .stats-bar .stat { display: flex; align-items: center; gap: 4px; }
+    .stats-bar .stat-value { color: #c9d1d9; font-weight: 600; }
+
+    .connection-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #238636;
+        animation: pulse 2s infinite;
+    }
+
+    .connection-dot.disconnected { background: #f85149; animation: none; }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="logs-layout">
+    <div class="log-sidebar">
+        <div class="sidebar-title">Containers</div>
+        <button class="log-source active" data-source="all" onclick="switchSource('all', this)">
+            <span class="source-dot" style="background:#fff;"></span>
+            All Logs
+            <span class="source-count" id="count-all">0</span>
+        </button>
+        <button class="log-source" data-source="access" onclick="switchSource('access', this)">
+            <span class="source-dot access"></span>
+            Access Log
+            <span class="source-count" id="count-access">0</span>
+        </button>
+        <button class="log-source" data-source="gateway" onclick="switchSource('gateway', this)">
+            <span class="source-dot gateway"></span>
+            Gateway
+            <span class="source-count" id="count-gateway">0</span>
+        </button>
+        <button class="log-source" data-source="admin" onclick="switchSource('admin', this)">
+            <span class="source-dot admin"></span>
+            Admin
+            <span class="source-count" id="count-admin">0</span>
+        </button>
+
+        <div class="sidebar-title">Apps</div>
+        {% for svc in services %}
+        <button class="log-source" data-source="{{ svc }}" onclick="switchSource('{{ svc }}', this)">
+            <span class="source-dot app"></span>
+            {{ svc | replace('_', ' ') | title }}
+            <span class="source-count" id="count-{{ svc }}">0</span>
+        </button>
+        {% endfor %}
+    </div>
+
+    <div class="log-main">
+        <div class="log-toolbar">
+            <span class="log-toolbar-title" id="toolbar-title">All Logs</span>
+            <input type="text" class="log-search" id="search" placeholder="Filter logs..." oninput="filterLogs()">
+            <button class="toolbar-btn active" id="btn-autoscroll" onclick="toggleAutoscroll()">Auto-scroll</button>
+            <button class="toolbar-btn" id="btn-timestamps" onclick="toggleTimestamps()">Timestamps</button>
+            <button class="toolbar-btn danger" onclick="clearLogs()">Clear</button>
+        </div>
+
+        <div class="log-container" id="log-container"></div>
+
+        <div class="stats-bar">
+            <div class="stat">
+                <span class="connection-dot" id="conn-dot"></span>
+                <span id="conn-status">Connecting...</span>
+            </div>
+            <div class="stat">Lines: <span class="stat-value" id="stat-lines">0</span></div>
+            <div class="stat">Errors: <span class="stat-value" id="stat-errors" style="color:#f85149;">0</span></div>
+            <div class="stat">Active Users: <span class="stat-value" id="stat-users">0</span></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const container = document.getElementById('log-container');
+const MAX_LINES = 5000;
+let activeSource = 'all';
+let autoScroll = true;
+let showTimestamps = false;
+let searchTerm = '';
+let lineCount = 0;
+let errorCount = 0;
+let counts = {};
+let activeUsers = new Set();
+let evtSource = null;
+
+function connectSSE() {
+    if (evtSource) evtSource.close();
+    document.getElementById('conn-dot').className = 'connection-dot';
+    document.getElementById('conn-status').textContent = 'Connecting...';
+
+    evtSource = new EventSource('/admin/logs/stream');
+
+    evtSource.onopen = () => {
+        document.getElementById('conn-dot').className = 'connection-dot';
+        document.getElementById('conn-status').textContent = 'Connected';
+    };
+
+    evtSource.onmessage = (e) => {
+        try {
+            const data = JSON.parse(e.data);
+            appendLine(data);
+        } catch {}
+    };
+
+    evtSource.onerror = () => {
+        document.getElementById('conn-dot').className = 'connection-dot disconnected';
+        document.getElementById('conn-status').textContent = 'Reconnecting...';
+    };
+}
+
+function detectLevel(msg) {
+    const lower = msg.toLowerCase();
+    if (lower.includes('error') || lower.includes('traceback') || lower.includes('exception')) return 'error';
+    if (lower.includes('warn')) return 'warn';
+    if (lower.includes('debug')) return 'debug';
+    return 'info';
+}
+
+function parseAccessLog(msg) {
+    // Format: IP - user [time] "METHOD /path HTTP/x.x" status bytes "referer" "ua"
+    const m = msg.match(/^(\S+)\s+-\s+(\S+)\s+\[([^\]]+)\]\s+"(\S+)\s+(\S+)\s+[^"]*"\s+(\d+)\s+(\d+)/);
+    if (!m) return null;
+    return { ip: m[1], user: m[2] === '-' ? null : m[2], time: m[3], method: m[4], path: m[5], status: parseInt(m[6]), bytes: m[7] };
+}
+
+function formatAccessLog(parsed) {
+    const statusClass = parsed.status < 300 ? 'status-2xx' : parsed.status < 400 ? 'status-3xx' : parsed.status < 500 ? 'status-4xx' : 'status-5xx';
+    let html = '';
+    if (parsed.user) html += `<span class="user">${esc(parsed.user)}</span> `;
+    html += `<span class="method">${esc(parsed.method)}</span> `;
+    html += `<span class="path">${esc(parsed.path)}</span> `;
+    html += `<span class="${statusClass}">${parsed.status}</span> `;
+    html += `${esc(parsed.bytes)}B`;
+    if (parsed.user) {
+        activeUsers.add(parsed.user);
+        document.getElementById('stat-users').textContent = activeUsers.size;
+    }
+    return html;
+}
+
+function esc(s) {
+    const d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+}
+
+function appendLine(data) {
+    const { source, line, ts } = data;
+    lineCount++;
+    counts[source] = (counts[source] || 0) + 1;
+
+    // Detect if access log
+    let isAccess = source === 'gateway' && line.match(/^\d+\.\d+\.\d+\.\d+\s+-\s+/);
+    let effectiveSource = isAccess ? 'access' : source;
+    if (isAccess) counts['access'] = (counts['access'] || 0) + 1;
+
+    const level = isAccess ? 'access' : detectLevel(line);
+    if (level === 'error') errorCount++;
+
+    // Build HTML
+    const el = document.createElement('div');
+    el.className = `log-line ${level}`;
+    el.dataset.source = effectiveSource;
+    el.dataset.rawSource = source;
+
+    let msgHtml;
+    if (isAccess) {
+        const parsed = parseAccessLog(line);
+        msgHtml = parsed ? formatAccessLog(parsed) : esc(line);
+    } else {
+        msgHtml = esc(line);
+    }
+
+    // Apply search highlight
+    if (searchTerm && msgHtml.toLowerCase().includes(searchTerm.toLowerCase())) {
+        const re = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+        msgHtml = msgHtml.replace(re, '<span class="hl">$1</span>');
+    }
+
+    const tsStr = ts || '';
+    el.innerHTML = `<span class="log-ts" style="${showTimestamps ? '' : 'display:none'}">${esc(tsStr)}</span>` +
+        `<span class="log-src ${effectiveSource}">${esc(effectiveSource)}</span>` +
+        `<span class="log-msg">${msgHtml}</span>`;
+
+    // Visibility
+    if (activeSource !== 'all' && effectiveSource !== activeSource && source !== activeSource) {
+        el.classList.add('hidden');
+    }
+    if (searchTerm && !line.toLowerCase().includes(searchTerm.toLowerCase())) {
+        el.classList.add('hidden');
+    }
+
+    container.appendChild(el);
+
+    // Prune old lines
+    while (container.children.length > MAX_LINES) {
+        container.removeChild(container.firstChild);
+    }
+
+    // Update stats
+    document.getElementById('stat-lines').textContent = lineCount;
+    document.getElementById('stat-errors').textContent = errorCount;
+    updateCounts();
+
+    if (autoScroll) container.scrollTop = container.scrollHeight;
+}
+
+function updateCounts() {
+    document.getElementById('count-all').textContent = lineCount;
+    for (const [src, cnt] of Object.entries(counts)) {
+        const el = document.getElementById('count-' + src);
+        if (el) el.textContent = cnt;
+    }
+}
+
+function switchSource(source, btn) {
+    activeSource = source;
+    document.querySelectorAll('.log-source').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    const names = { all: 'All Logs', access: 'Access Log', gateway: 'Gateway', admin: 'Admin' };
+    document.getElementById('toolbar-title').textContent = names[source] || source.replace('_', ' ');
+
+    document.querySelectorAll('.log-line').forEach(el => {
+        const elSrc = el.dataset.source;
+        const elRaw = el.dataset.rawSource;
+        const matchSource = source === 'all' || elSrc === source || elRaw === source;
+        const matchSearch = !searchTerm || el.querySelector('.log-msg').textContent.toLowerCase().includes(searchTerm.toLowerCase());
+        el.classList.toggle('hidden', !(matchSource && matchSearch));
+    });
+}
+
+function filterLogs() {
+    searchTerm = document.getElementById('search').value;
+    document.querySelectorAll('.log-line').forEach(el => {
+        const elSrc = el.dataset.source;
+        const elRaw = el.dataset.rawSource;
+        const matchSource = activeSource === 'all' || elSrc === activeSource || elRaw === activeSource;
+        const matchSearch = !searchTerm || el.querySelector('.log-msg').textContent.toLowerCase().includes(searchTerm.toLowerCase());
+        el.classList.toggle('hidden', !(matchSource && matchSearch));
+    });
+}
+
+function toggleAutoscroll() {
+    autoScroll = !autoScroll;
+    document.getElementById('btn-autoscroll').classList.toggle('active', autoScroll);
+    if (autoScroll) container.scrollTop = container.scrollHeight;
+}
+
+function toggleTimestamps() {
+    showTimestamps = !showTimestamps;
+    document.getElementById('btn-timestamps').classList.toggle('active', showTimestamps);
+    document.querySelectorAll('.log-ts').forEach(el => el.style.display = showTimestamps ? '' : 'none');
+}
+
+function clearLogs() {
+    container.innerHTML = '';
+    lineCount = 0;
+    errorCount = 0;
+    counts = {};
+    activeUsers.clear();
+    updateCounts();
+    document.getElementById('stat-lines').textContent = '0';
+    document.getElementById('stat-errors').textContent = '0';
+    document.getElementById('stat-users').textContent = '0';
+}
+
+connectSSE();
+</script>
+{% endblock %}

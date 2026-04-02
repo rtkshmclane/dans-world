@@ -1,0 +1,214 @@
+# Dan's World App Registry
+# This is the single source of truth for all apps and demos.
+# Admin reads this at startup. Health checks, log viewer, and status page
+# all iterate over this file dynamically.
+#
+# To add a new app:
+#   1. Add an entry below
+#   2. Add the app's service to docker-compose.yml
+#   3. Add an nginx location block in gateway/conf.d/30-apps.conf
+#   4. Add a Dockerfile to the app's source directory
+#   See CONTRIBUTING.md for the full walkthrough.
+
+apps:
+  - id: ticketmaker
+    name: Ticketmaker
+    description: "Ticket analysis and viewer"
+    url: /apps/ticketmaker/
+    icon: ticket
+    groups: [analytics, admin]
+    author: Sam
+    port: 5000
+    health: /
+    memory: 512m
+    source:
+      repo: rtkshmclane/CTOWorkspace
+      path: 02_R_and_D/ticketmaker
+      local: ${TICKETMAKER_PATH}
+    container: dw-ticketmaker
+
+  - id: detections
+    name: Detection Catalog
+    description: "2,496 detections with MITRE ATT&CK mappings"
+    url: /apps/detections/
+    icon: shield
+    groups: [analytics, admin]
+    author: Sam
+    port: 5555
+    health: /
+    memory: 512m
+    source:
+      repo: rtkshmclane/CTOWorkspace
+      path: 02_R_and_D/detection_catalog
+      local: ${DETECTION_CATALOG_PATH}
+    container: dw-detections
+
+  - id: adoption
+    name: Integration Adoption
+    description: "Adoption analytics across 14,507 customers"
+    url: /apps/adoption/
+    icon: chart
+    groups: [analytics, admin]
+    author: Sam
+    port: 8501
+    health: /apps/adoption/
+    memory: 1g
+    source:
+      repo: rtkshmclane/CTOWorkspace
+      path: 03_Product/integration_adoption/analytics
+      local: ${INTEGRATION_ADOPTION_PATH}
+    container: dw-adoption
+    websocket: true
+
+  - id: catalog
+    name: Integration Catalog
+    description: "Integration battle cards and competitive intel"
+    url: /apps/catalog/
+    icon: catalog
+    groups: [analytics, admin]
+    author: Sam
+    port: 5001
+    health: /api/integrations
+    memory: 512m
+    source:
+      repo: rtkshmclane/CTOWorkspace
+      path: 03_Product/integration_catalog/dashboard
+      local: ${INTEGRATION_CATALOG_PATH}
+    container: dw-catalog
+    depends_on: [detections, adoption]
+
+  - id: cloud-live
+    name: Aurora Cloud Live
+    description: "Cloud security dashboard (Wiz integration)"
+    url: /apps/cloud-live/
+    icon: cloud
+    groups: [engineering, admin]
+    author: Sam
+    port: 5004
+    health: /
+    memory: 512m
+    source:
+      repo: rtkshmclane/CTOWorkspace
+      path: 02_R_and_D/AW_Point_Products_Demo/aw_managed_cloud_live
+      local: ${CLOUD_LIVE_PATH}
+    container: dw-cloud-live
+
+  - id: network-graph
+    name: Network Graph Playground
+    description: "Entity relationship graphs from tickets and cases"
+    url: /apps/network-graph/
+    icon: graph
+    groups: [analytics, admin]
+    author: Sam
+    port: 3334
+    health: /
+    memory: 256m
+    source:
+      repo: rtkshmclane/CTOWorkspace
+      path: 02_R_and_D/network_graph_playground
+      local: ${NETWORK_GRAPH_PATH}
+    container: dw-network-graph
+
+  - id: okta-is
+    name: Okta Identity Inspector
+    description: "Decode JWT claims from Okta/Prisma ZTNA for authorization planning"
+    url: /apps/okta-is/
+    icon: shield
+    groups: [analytics, admin]
+    author: Sam
+    port: 5005
+    health: /health
+    memory: 256m
+    source:
+      builtin: true
+    container: dw-okta-is
+
+  - id: analytic-stories
+    name: Analytic Stories
+    description: "Attack chains and detection coverage mapped to MITRE ATT&CK"
+    url: /apps/analytic-stories/
+    icon: shield
+    groups: [analytics, admin]
+    author: Yeti
+    port: 8089
+    health: /api/v1/stats
+    memory: 512m
+    source:
+      repo: rtkshmclane/CTOWorkspace
+      path: Collaborators/BradB/idr/detection_coe/poc/analytic_stories
+      local: ${ANALYTIC_STORIES_PATH}
+    container: dw-analytic-stories
+
+  - id: churn-explorer
+    name: Churn Explorer
+    description: "Q3'26 churn analysis -- tickets, ops, signals, competitor intel"
+    url: /demos/churn-explorer/
+    icon: churn
+    groups: [analytics, admin]
+    author: Sam
+    source:
+      static: true
+
+demos:
+  - id: aurora-xdr-lite
+    name: Aurora XDR Lite
+    description: "XDR dashboard, detections, hunting, workbench"
+    url: /demos/point-products/aurora_xdr_lite_v4/aw_home.html
+    groups: [demos, admin]
+    author: Sam
+
+  - id: aurora-mobile
+    name: Aurora Mobile Threat Defense
+    description: "Mobile device security, app inventory, phishing"
+    url: /demos/point-products/aurora_mobile_threat_defense/aw_home.html
+    groups: [demos, admin]
+    author: Sam
+
+  - id: managed-cloud
+    name: Managed Cloud Security
+    description: "Cloud posture, findings, compliance, security graph"
+    url: /demos/point-products/aw_managed_cloud/aw_home.html
+    groups: [demos, admin]
+    author: Sam
+
+  - id: managed-identity
+    name: Managed Identity
+    description: "Identity explorer, MITRE mapping, i18n (7 languages)"
+    url: /demos/point-products/aw_managed_identity/aw_home.html
+    groups: [demos, admin]
+    author: Sam
+
+  - id: rsac-v3
+    name: RSAC Agentic Demo
+    description: "RSAC 2026 agentic AI demo"
+    url: /demos/rsac-v3/
+    groups: [demos, admin]
+    author: Sam
+
+  - id: rsac-wherewolf
+    name: RSAC WhereWolf
+    description: "WhereWolf threat hunting demo"
+    url: /demos/rsac-wherewolf/
+    groups: [demos, admin]
+    author: Sam
+
+  - id: compliance
+    name: Compliance Reporting
+    description: "Compliance report templates and viewer"
+    url: /demos/compliance/
+    groups: [demos, admin]
+    author: Sam
+
+  - id: customer-portal
+    name: Customer Portal
+    description: "Next-gen customer portal prototype"
+    url: /demos/customer-portal/
+    groups: [demos, admin]
+    author: Andrew D'Angelo
+
+  - id: command-centre-ng
+    name: Command Centre NG
+    description: "Next-gen Command Centre prototype"
+    url: /demos/command-centre-ng/
+    groups: [demos, admin]
+    author: Doug Akers

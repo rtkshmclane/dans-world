@@ -1,0 +1,464 @@
+{% extends "base.html" %}
+{% set active_page = "admin" %}
+
+{% block title %}Admin -- Dan's World of AI Magic{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+    }
+
+    .admin-header h1 {
+        font-size: 22px;
+        color: var(--aw-navy);
+    }
+
+    .stats-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+
+    .stat-card {
+        background: white;
+        border: 1px solid var(--aw-gray-200);
+        border-radius: 8px;
+        padding: 16px;
+    }
+
+    .stat-card .label {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--aw-gray-600);
+    }
+
+    .stat-card .value {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--aw-navy);
+        margin-top: 4px;
+    }
+
+    .section { margin-bottom: 32px; }
+
+    .inline-form {
+        display: flex;
+        gap: 8px;
+        align-items: end;
+        flex-wrap: wrap;
+    }
+
+    .inline-form .form-group { margin-bottom: 0; flex: 1; min-width: 140px; }
+
+    .checkbox-group {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .checkbox-group label {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 13px;
+        cursor: pointer;
+    }
+
+    .checkbox-group input[type="checkbox"] { width: auto; }
+
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 200;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal-overlay.active { display: flex; }
+
+    .modal {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        width: 100%;
+        max-width: 480px;
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+
+    .modal h2 {
+        font-size: 18px;
+        margin-bottom: 16px;
+        color: var(--aw-navy);
+    }
+
+    .actions { display: flex; gap: 8px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-header">
+    <h1>Admin Dashboard</h1>
+</div>
+
+<div class="stats-row">
+    <div class="stat-card">
+        <div class="label">Users</div>
+        <div class="value">{{ users | length }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="label">Groups</div>
+        <div class="value">{{ groups | length }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="label">Apps</div>
+        <div class="value">{{ apps | length }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="label">Drop Zone Items</div>
+        <div class="value">{{ drops | length }}</div>
+    </div>
+</div>
+
+<!-- Management Links -->
+<div class="stats-row" style="margin-bottom: 24px;">
+    <a href="/admin/dropzone" class="stat-card" style="text-decoration: none; cursor: pointer; transition: border-color 0.15s;">
+        <div class="label">Manage</div>
+        <div style="font-size: 16px; font-weight: 600; color: var(--aw-navy); margin-top: 4px;">Drop Zone</div>
+        <div style="font-size: 13px; color: var(--aw-gray-600); margin-top: 4px;">Upload and manage HTML files</div>
+    </a>
+    <a href="/reports" class="stat-card" style="text-decoration: none; cursor: pointer; transition: border-color 0.15s;">
+        <div class="label">View</div>
+        <div style="font-size: 16px; font-weight: 600; color: var(--aw-navy); margin-top: 4px;">Reports</div>
+        <div style="font-size: 13px; color: var(--aw-gray-600); margin-top: 4px;">Browse shared reports</div>
+    </a>
+    <a href="/admin/terminal" class="stat-card" style="text-decoration: none; cursor: pointer; transition: border-color 0.15s;">
+        <div class="label">Tools</div>
+        <div style="font-size: 16px; font-weight: 600; color: var(--aw-navy); margin-top: 4px;">Terminal</div>
+        <div style="font-size: 13px; color: var(--aw-gray-600); margin-top: 4px;">Server shell access</div>
+    </a>
+    <a href="/admin/logs" class="stat-card" style="text-decoration: none; cursor: pointer; transition: border-color 0.15s;">
+        <div class="label">Tools</div>
+        <div style="font-size: 16px; font-weight: 600; color: var(--aw-navy); margin-top: 4px;">Log Viewer</div>
+        <div style="font-size: 13px; color: var(--aw-gray-600); margin-top: 4px;">Real-time app & access logs</div>
+    </a>
+    <a href="/admin/status" class="stat-card" style="text-decoration: none; cursor: pointer; transition: border-color 0.15s;">
+        <div class="label">Tools</div>
+        <div style="font-size: 16px; font-weight: 600; color: var(--aw-navy); margin-top: 4px;">System Status</div>
+        <div style="font-size: 13px; color: var(--aw-gray-600); margin-top: 4px;">Health, resources, containers, SSL</div>
+    </a>
+</div>
+
+<!-- Admin-Only Apps (apps categorized as just "admin") -->
+{% set ns_admin = namespace(apps=[]) %}
+{% for a in apps %}
+    {% set non_admin = a.groups | reject('equalto', 'admin') | list %}
+    {% if non_admin | length == 0 and not a.is_hidden %}
+        {% set ns_admin.apps = ns_admin.apps + [a] %}
+    {% endif %}
+{% endfor %}
+{% if ns_admin.apps %}
+<div style="margin-bottom: 24px;">
+    <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--aw-gray-600); margin-bottom: 8px; font-weight: 600;">Admin Apps</div>
+    <div class="stats-row">
+        {% for a in ns_admin.apps %}
+        <a href="{{ a.url }}" class="stat-card" style="text-decoration: none; cursor: pointer; transition: border-color 0.15s;">
+            <div class="label">{{ a.author }}</div>
+            <div style="font-size: 16px; font-weight: 600; color: var(--aw-navy); margin-top: 4px;">{{ a.name }}</div>
+            <div style="font-size: 13px; color: var(--aw-gray-600); margin-top: 4px;">{{ a.description }}</div>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Users Section -->
+<div class="section">
+    <div class="card">
+        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+            Users
+            <button class="btn btn-primary btn-sm" onclick="document.getElementById('addUserModal').classList.add('active')">Add User</button>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Display Name</th>
+                    <th>Groups</th>
+                    <th>Status</th>
+                    <th>Last Login</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in users %}
+                <tr>
+                    <td><strong>{{ u.username }}</strong></td>
+                    <td>{{ u.display_name }}</td>
+                    <td>
+                        {% if u.group_names %}
+                            {% for g in u.group_names.split(',') %}
+                            <span class="badge badge-blue">{{ g }}</span>
+                            {% endfor %}
+                        {% else %}
+                            <span class="badge badge-gray">none</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if u.is_active %}
+                            <span class="badge badge-green">Active</span>
+                        {% else %}
+                            <span class="badge badge-red">Disabled</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ u.last_login or 'Never' }}</td>
+                    <td>
+                        <div class="actions">
+                            <button class="btn btn-secondary btn-sm"
+                                    onclick="openEditModal({{ u.id }}, '{{ u.display_name }}', {{ u.is_active }}, '{{ u.group_names or '' }}')">Edit</button>
+                            {% if u.username != 'admin' %}
+                            <form method="POST" action="/admin/users/{{ u.id }}/delete"
+                                  onsubmit="return confirm('Delete user {{ u.username }}?')">
+                                <button class="btn btn-danger btn-sm" type="submit">Delete</button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Apps Section -->
+<div class="section">
+    <div class="card">
+        <div class="card-header">Apps</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>App</th>
+                    <th>Author</th>
+                    <th>Groups</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for a in apps %}
+                <tr style="{{ 'opacity: 0.5;' if a.is_hidden else '' }}">
+                    <td>
+                        <strong>{{ a.name }}</strong>
+                        <div style="font-size: 12px; color: var(--aw-gray-600);">{{ a.description }}</div>
+                    </td>
+                    <td>{{ a.author }}</td>
+                    <td>
+                        {% for g in a.groups %}
+                        <span class="badge badge-blue">{{ g }}</span>
+                        {% endfor %}
+                    </td>
+                    <td>
+                        {% if a.is_hidden %}
+                            <span class="badge badge-yellow" style="background: #fef3c7; color: #92400e;">Hidden</span>
+                        {% else %}
+                            <span class="badge badge-green">Visible</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="actions">
+                            <button class="btn btn-secondary btn-sm"
+                                    onclick="openAppEditModal('{{ a.id }}', '{{ a.name }}', '{{ a.groups | join(',') }}')">Edit</button>
+                            <form method="POST" action="/admin/apps/{{ a.id }}/toggle-hidden" style="display:inline">
+                                <button class="btn btn-secondary btn-sm" type="submit">
+                                    {{ 'Show' if a.is_hidden else 'Hide' }}
+                                </button>
+                            </form>
+                            <form method="POST" action="/admin/apps/{{ a.id }}/delete" style="display:inline"
+                                  onsubmit="return confirm('Delete {{ a.name }}? It will be removed from the landing page.')">
+                                <button class="btn btn-danger btn-sm" type="submit">Delete</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Groups Section -->
+<div class="section">
+    <div class="card">
+        <div class="card-header">Groups</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Group</th>
+                    <th>Description</th>
+                    <th>Apps</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for grp in groups %}
+                <tr>
+                    <td><span class="badge badge-blue">{{ grp.name }}</span></td>
+                    <td>{{ grp.description }}</td>
+                    <td>
+                        {% for a in apps %}
+                            {% if grp.name in a.groups %}
+                                <span class="badge badge-gray">{{ a.name }}</span>
+                            {% endif %}
+                        {% endfor %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Add User Modal -->
+<div class="modal-overlay" id="addUserModal">
+    <div class="modal">
+        <h2>Add User</h2>
+        <form method="POST" action="/admin/users/add">
+            <div class="form-group">
+                <label for="new-username">Username</label>
+                <input type="text" id="new-username" name="username" required>
+            </div>
+            <div class="form-group">
+                <label for="new-password">Password</label>
+                <input type="password" id="new-password" name="password" required>
+            </div>
+            <div class="form-group">
+                <label for="new-display">Display Name</label>
+                <input type="text" id="new-display" name="display_name">
+            </div>
+            <div class="form-group">
+                <label>Groups</label>
+                <div class="checkbox-group">
+                    {% for grp in groups %}
+                    <label>
+                        <input type="checkbox" name="groups" value="{{ grp.id }}"> {{ grp.name }}
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="actions">
+                <button type="submit" class="btn btn-primary">Create User</button>
+                <button type="button" class="btn btn-secondary"
+                        onclick="document.getElementById('addUserModal').classList.remove('active')">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Edit App Modal -->
+<div class="modal-overlay" id="editAppModal">
+    <div class="modal">
+        <h2>Edit App: <span id="edit-app-name"></span></h2>
+        <form method="POST" id="editAppForm">
+            <div class="form-group">
+                <label>Category (groups)</label>
+                <div class="checkbox-group" id="edit-app-groups">
+                    <label><input type="checkbox" name="groups" value="analytics" data-name="analytics"> analytics</label>
+                    <label><input type="checkbox" name="groups" value="demos" data-name="demos"> demos</label>
+                    <label><input type="checkbox" name="groups" value="engineering" data-name="engineering"> engineering</label>
+                    <label><input type="checkbox" name="groups" value="admin" data-name="admin"> admin</label>
+                </div>
+                <div style="font-size: 12px; color: var(--aw-gray-600); margin-top: 8px;">
+                    Landing page sections: analytics = "Analytics & Intelligence", demos = "Demos & Presentations", engineering = "Engineering Tools". Apps with only "admin" won't appear on landing page.
+                </div>
+            </div>
+            <div class="actions">
+                <button type="submit" class="btn btn-primary">Save</button>
+                <button type="button" class="btn btn-secondary"
+                        onclick="document.getElementById('editAppModal').classList.remove('active')">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Edit User Modal -->
+<div class="modal-overlay" id="editUserModal">
+    <div class="modal">
+        <h2>Edit User</h2>
+        <form method="POST" id="editUserForm">
+            <div class="form-group">
+                <label for="edit-display">Display Name</label>
+                <input type="text" id="edit-display" name="display_name">
+            </div>
+            <div class="form-group">
+                <label for="edit-password">New Password (leave blank to keep current)</label>
+                <input type="password" id="edit-password" name="password">
+            </div>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="edit-active" name="is_active" style="width:auto"> Active
+                </label>
+            </div>
+            <div class="form-group">
+                <label>Groups</label>
+                <div class="checkbox-group" id="edit-groups">
+                    {% for grp in groups %}
+                    <label>
+                        <input type="checkbox" name="groups" value="{{ grp.id }}" data-name="{{ grp.name }}"> {{ grp.name }}
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="actions">
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+                <button type="button" class="btn btn-secondary"
+                        onclick="document.getElementById('editUserModal').classList.remove('active')">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function openEditModal(userId, displayName, isActive, groupNames) {
+    document.getElementById('editUserForm').action = '/admin/users/' + userId + '/edit';
+    document.getElementById('edit-display').value = displayName;
+    document.getElementById('edit-active').checked = !!isActive;
+
+    var groups = groupNames ? groupNames.split(',') : [];
+    document.querySelectorAll('#edit-groups input[type=checkbox]').forEach(function(cb) {
+        cb.checked = groups.indexOf(cb.dataset.name) !== -1;
+    });
+
+    document.getElementById('editUserModal').classList.add('active');
+}
+
+function openAppEditModal(appId, appName, groupsStr) {
+    document.getElementById('editAppForm').action = '/admin/apps/' + appId + '/edit';
+    document.getElementById('edit-app-name').textContent = appName;
+
+    var groups = groupsStr ? groupsStr.split(',') : [];
+    document.querySelectorAll('#edit-app-groups input[type=checkbox]').forEach(function(cb) {
+        cb.checked = groups.indexOf(cb.dataset.name) !== -1;
+    });
+
+    document.getElementById('editAppModal').classList.add('active');
+}
+
+// Close modals on overlay click
+document.querySelectorAll('.modal-overlay').forEach(function(overlay) {
+    overlay.addEventListener('click', function(e) {
+        if (e.target === overlay) overlay.classList.remove('active');
+    });
+});
+</script>
+{% endblock %}

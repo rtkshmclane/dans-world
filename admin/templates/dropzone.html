@@ -1,0 +1,248 @@
+{% extends "base.html" %}
+{% set active_page = "dropzone" %}
+
+{% block title %}Drop Zone -- Dan's World of AI Magic{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dropzone-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+    }
+
+    .dropzone-header h1 {
+        font-size: 22px;
+        color: var(--aw-navy);
+    }
+
+    .upload-area {
+        border: 2px dashed var(--aw-gray-300);
+        border-radius: 12px;
+        padding: 32px;
+        text-align: center;
+        background: white;
+        margin-bottom: 24px;
+        transition: border-color 0.15s;
+    }
+
+    .upload-area.dragover {
+        border-color: var(--aw-orange);
+        background: #fff7ed;
+    }
+
+    .upload-area p {
+        color: var(--aw-gray-600);
+        font-size: 14px;
+        margin-top: 8px;
+    }
+
+    .upload-form {
+        display: flex;
+        gap: 12px;
+        align-items: end;
+        flex-wrap: wrap;
+        justify-content: center;
+        margin-top: 16px;
+    }
+
+    .upload-form .form-group { margin-bottom: 0; }
+
+    .upload-form select {
+        padding: 8px 10px;
+        border: 1px solid var(--aw-gray-300);
+        border-radius: 6px;
+        font-size: 13px;
+        background: white;
+    }
+
+    .toggle-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 14px;
+    }
+
+    .link-cell {
+        font-family: monospace;
+        font-size: 13px;
+    }
+
+    .link-cell a {
+        color: var(--aw-orange);
+        text-decoration: none;
+    }
+
+    .link-cell a:hover { text-decoration: underline; }
+
+    .copy-btn {
+        background: none;
+        border: 1px solid var(--aw-gray-300);
+        border-radius: 4px;
+        padding: 2px 8px;
+        font-size: 12px;
+        cursor: pointer;
+        color: var(--aw-gray-600);
+    }
+
+    .copy-btn:hover { background: var(--aw-gray-100); }
+
+    .cat-badge {
+        font-size: 11px;
+        padding: 2px 8px;
+        border-radius: 4px;
+        background: var(--aw-gray-100);
+        color: var(--aw-gray-700);
+        white-space: nowrap;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dropzone-header">
+    <h1>HTML Drop Zone</h1>
+</div>
+
+<div class="upload-area" id="dropArea">
+    <h3>Upload an HTML file</h3>
+    <p>Drag and drop or click to select. Files are served at /d/&lt;uuid&gt;.html</p>
+
+    <form method="POST" action="/admin/dropzone/upload" enctype="multipart/form-data" class="upload-form">
+        <div class="form-group">
+            <input type="file" name="file" accept=".html" required id="fileInput">
+        </div>
+        <div class="form-group">
+            <input type="text" name="report_title" placeholder="Report title (optional)" style="width: 220px;">
+        </div>
+        <div class="form-group">
+            <input type="text" name="description" placeholder="Description (optional)" style="width: 220px;">
+        </div>
+        <div class="form-group">
+            <select name="category">
+                <option value="Uncategorized">Category...</option>
+                {% for cat in categories %}
+                <option value="{{ cat }}">{{ cat }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="toggle-row">
+            <label style="display: flex; align-items: center; gap: 4px; margin: 0;">
+                <input type="checkbox" name="is_report" style="width: auto;"> Report
+            </label>
+            <label style="display: flex; align-items: center; gap: 4px; margin: 0;">
+                <input type="checkbox" name="is_public" style="width: auto;"> Public
+            </label>
+        </div>
+        <button type="submit" class="btn btn-primary">Upload</button>
+    </form>
+</div>
+
+{% if drops %}
+<div class="card">
+    <div class="card-header">Uploaded Files ({{ drops | length }})</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Title / Name</th>
+                <th>Link</th>
+                <th>Category</th>
+                <th>Visibility</th>
+                <th>Report</th>
+                <th>Uploaded By</th>
+                <th>Date</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for d in drops %}
+            <tr>
+                <td>
+                    {% if d.report_title %}
+                        <strong>{{ d.report_title }}</strong><br>
+                        <span style="font-size: 11px; color: var(--aw-gray-500);">{{ d.original_name }}</span>
+                    {% else %}
+                        {{ d.original_name }}
+                    {% endif %}
+                </td>
+                <td class="link-cell">
+                    <a href="/d/{{ d.id }}.html" target="_blank">/d/{{ d.id[:8] }}...</a>
+                    <button class="copy-btn" onclick="copyLink('{{ d.id }}')">Copy</button>
+                </td>
+                <td><span class="cat-badge">{{ d.category or 'Uncategorized' }}</span></td>
+                <td>
+                    {% if d.is_public %}
+                        <span class="badge badge-green">Public</span>
+                    {% else %}
+                        <span class="badge badge-orange">Private</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if d.is_report %}
+                        <span class="badge badge-blue" style="background: #dbeafe; color: #1d4ed8;">Report</span>
+                    {% else %}
+                        <span style="color: var(--aw-gray-400);">--</span>
+                    {% endif %}
+                </td>
+                <td>{{ d.uploaded_by }}</td>
+                <td>{{ d.uploaded_at[:10] if d.uploaded_at else '' }}</td>
+                <td>
+                    <div class="actions">
+                        <form method="POST" action="/admin/dropzone/{{ d.id }}/toggle" style="display:inline">
+                            <button class="btn btn-secondary btn-sm" type="submit">Toggle</button>
+                        </form>
+                        <form method="POST" action="/admin/dropzone/{{ d.id }}/delete"
+                              onsubmit="return confirm('Delete this file?')" style="display:inline">
+                            <button class="btn btn-danger btn-sm" type="submit">Delete</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="card">
+    <div class="card-body" style="text-align: center; color: var(--aw-gray-600); padding: 48px;">
+        No files uploaded yet. Use the form above to share HTML files.
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function copyLink(uuid) {
+    var url = window.location.origin + '/d/' + uuid + '.html';
+    navigator.clipboard.writeText(url).then(function() {
+        event.target.textContent = 'Copied';
+        setTimeout(function() { event.target.textContent = 'Copy'; }, 1500);
+    });
+}
+
+var dropArea = document.getElementById('dropArea');
+var fileInput = document.getElementById('fileInput');
+
+['dragenter', 'dragover'].forEach(function(evt) {
+    dropArea.addEventListener(evt, function(e) {
+        e.preventDefault();
+        dropArea.classList.add('dragover');
+    });
+});
+
+['dragleave', 'drop'].forEach(function(evt) {
+    dropArea.addEventListener(evt, function(e) {
+        e.preventDefault();
+        dropArea.classList.remove('dragover');
+    });
+});
+
+dropArea.addEventListener('drop', function(e) {
+    var files = e.dataTransfer.files;
+    if (files.length > 0) {
+        fileInput.files = files;
+    }
+});
+</script>
+{% endblock %}

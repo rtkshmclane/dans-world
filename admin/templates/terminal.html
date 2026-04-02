@@ -1,0 +1,253 @@
+{% extends "base.html" %}
+{% set active_page = "terminal" %}
+{% block title %}Terminal -- Dan's World{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/css/xterm.min.css">
+<style>
+    .terminal-wrapper {
+        display: flex;
+        flex-direction: column;
+        height: calc(100vh - 56px - 48px);
+        padding: 0;
+    }
+
+    .terminal-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 16px;
+        background: var(--aw-navy-dark);
+        border-bottom: 1px solid #2a3a5a;
+    }
+
+    .terminal-toolbar-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .terminal-status {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        color: var(--aw-gray-300);
+    }
+
+    .terminal-status .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--aw-error);
+        transition: background 0.3s;
+    }
+
+    .terminal-status .dot.connected { background: var(--aw-success); }
+
+    .terminal-label {
+        font-family: "SF Mono", "Fira Code", "Cascadia Code", monospace;
+        font-size: 13px;
+        color: var(--aw-orange);
+    }
+
+    .terminal-toolbar-right {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .terminal-toolbar .btn-sm {
+        background: var(--aw-navy-light);
+        color: var(--aw-gray-300);
+        border: 1px solid #2a3a5a;
+        font-size: 12px;
+        cursor: pointer;
+    }
+
+    .terminal-toolbar .btn-sm:hover {
+        background: var(--aw-navy);
+        color: var(--aw-white);
+    }
+
+    .terminal-body {
+        flex: 1;
+        background: #0d1117;
+        padding: 4px;
+        position: relative;
+    }
+
+    .terminal-body #terminal { height: 100%; }
+
+    .terminal-overlay {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: rgba(13, 17, 23, 0.85);
+        z-index: 10;
+    }
+
+    .terminal-overlay.hidden { display: none; }
+
+    .terminal-overlay p {
+        color: var(--aw-gray-300);
+        font-size: 14px;
+        margin-bottom: 12px;
+    }
+
+    /* Override container max-width for terminal */
+    .container {
+        max-width: 100%;
+        padding: 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="terminal-wrapper">
+    <div class="terminal-toolbar">
+        <div class="terminal-toolbar-left">
+            <div class="terminal-status">
+                <span class="dot" id="status-dot"></span>
+                <span id="status-text">Disconnected</span>
+            </div>
+            <span class="terminal-label">{{ user.sub }}@dw-admin</span>
+        </div>
+        <div class="terminal-toolbar-right">
+            <button class="btn btn-sm" id="btn-fit" title="Fit terminal to window">Fit</button>
+            <button class="btn btn-sm" id="btn-clear" title="Clear terminal">Clear</button>
+        </div>
+    </div>
+    <div class="terminal-body">
+        <div id="terminal"></div>
+        <div class="terminal-overlay hidden" id="overlay">
+            <p id="overlay-msg">Connection lost.</p>
+            <button class="btn btn-primary btn-sm" id="btn-reconnect">Reconnect</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/lib/xterm.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@xterm/addon-fit@0.10.0/lib/addon-fit.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@xterm/addon-web-links@0.11.0/lib/addon-web-links.min.js"></script>
+<script>
+(function() {
+    const term = new window.Terminal({
+        cursorBlink: true,
+        cursorStyle: "bar",
+        fontSize: 14,
+        fontFamily: '"SF Mono", "Fira Code", "Cascadia Code", "Consolas", monospace',
+        theme: {
+            background: "#0d1117",
+            foreground: "#c9d1d9",
+            cursor: "#F37021",
+            cursorAccent: "#0d1117",
+            selectionBackground: "rgba(243, 112, 33, 0.3)",
+            black: "#0d1117",
+            red: "#ff7b72",
+            green: "#3fb950",
+            yellow: "#d29922",
+            blue: "#58a6ff",
+            magenta: "#bc8cff",
+            cyan: "#39c5cf",
+            white: "#c9d1d9",
+            brightBlack: "#484f58",
+            brightRed: "#ffa198",
+            brightGreen: "#56d364",
+            brightYellow: "#e3b341",
+            brightBlue: "#79c0ff",
+            brightMagenta: "#d2a8ff",
+            brightCyan: "#56d4dd",
+            brightWhite: "#f0f6fc"
+        }
+    });
+
+    const fitAddon = new window.FitAddon.FitAddon();
+    const webLinksAddon = new window.WebLinksAddon.WebLinksAddon();
+    term.loadAddon(fitAddon);
+    term.loadAddon(webLinksAddon);
+    term.open(document.getElementById("terminal"));
+    fitAddon.fit();
+
+    const dot = document.getElementById("status-dot");
+    const statusText = document.getElementById("status-text");
+    const overlay = document.getElementById("overlay");
+    const overlayMsg = document.getElementById("overlay-msg");
+
+    let ws = null;
+
+    function setStatus(connected) {
+        dot.classList.toggle("connected", connected);
+        statusText.textContent = connected ? "Connected" : "Disconnected";
+    }
+
+    function connect() {
+        overlay.classList.add("hidden");
+        const proto = location.protocol === "https:" ? "wss:" : "ws:";
+        ws = new WebSocket(proto + "//" + location.host + "/admin/terminal/ws");
+
+        ws.onopen = function() {
+            setStatus(true);
+            // Send initial size
+            ws.send(JSON.stringify({type: "resize", rows: term.rows, cols: term.cols}));
+        };
+
+        ws.onmessage = function(e) {
+            if (typeof e.data === "string") {
+                term.write(e.data);
+            } else {
+                // Binary data
+                e.data.arrayBuffer().then(function(buf) {
+                    term.write(new Uint8Array(buf));
+                });
+            }
+        };
+
+        ws.onclose = function() {
+            setStatus(false);
+            overlayMsg.textContent = "Connection lost.";
+            overlay.classList.remove("hidden");
+        };
+
+        ws.onerror = function() {
+            setStatus(false);
+        };
+    }
+
+    // Terminal input -> WebSocket
+    term.onData(function(data) {
+        if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({type: "input", data: data}));
+        }
+    });
+
+    // Handle resize
+    function doResize() {
+        fitAddon.fit();
+        if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({type: "resize", rows: term.rows, cols: term.cols}));
+        }
+    }
+
+    window.addEventListener("resize", doResize);
+
+    // Toolbar buttons
+    document.getElementById("btn-fit").addEventListener("click", doResize);
+    document.getElementById("btn-clear").addEventListener("click", function() {
+        term.clear();
+    });
+    document.getElementById("btn-reconnect").addEventListener("click", function() {
+        if (ws) { try { ws.close(); } catch(e) {} }
+        connect();
+    });
+
+    // Initial connection
+    connect();
+})();
+</script>
+{% endblock %}
