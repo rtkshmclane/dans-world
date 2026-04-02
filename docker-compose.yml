@@ -1,4 +1,6 @@
-version: "3.8"
+# Dan's World -- Per-app container orchestration
+# Requires: paths.env (machine-specific app source paths)
+# Usage: source paths.env && docker compose up --build -d
 
 services:
   gateway:
@@ -10,33 +12,19 @@ services:
     volumes:
       - ./static-sites:/srv/static:ro
       - ./html-dropzone:/srv/dropzone:ro
-      - ./apps/integration_catalog_dist:/srv/catalog-frontend:ro
       - ssl-certs:/etc/nginx/ssl:ro
     depends_on:
-      - apps
       - admin
+      - ticketmaker
+      - detection-catalog
+      - integration-adoption
+      - integration-catalog
+      - cloud-live
+      - network-graph
+      - okta-is
+      - analytic-stories
     restart: unless-stopped
     mem_limit: ${GATEWAY_MEMORY_LIMIT:-128m}
-    networks:
-      - dw-net
-
-  apps:
-    build: ./apps
-    container_name: dw-apps
-    volumes:
-      - ./apps/ticketmaker:/app/ticketmaker
-      - ./apps/detection_catalog:/app/detection_catalog
-      - ./apps/integration_adoption:/app/integration_adoption
-      - ./apps/integration_catalog:/app/integration_catalog
-      - ./apps/cloud_live:/app/cloud_live
-      - ./apps/network_graph:/app/network_graph
-      - ./apps/okta_is:/app/okta_is
-      - ./apps/analytic_stories:/app/analytic_stories
-      - app-data:/app/data
-    env_file:
-      - .env
-    restart: unless-stopped
-    mem_limit: ${APPS_MEMORY_LIMIT:-4g}
     networks:
       - dw-net
 
@@ -54,9 +42,94 @@ services:
     networks:
       - dw-net
 
+  ticketmaker:
+    build: ${TICKETMAKER_PATH:-./_placeholder}
+    container_name: dw-ticketmaker
+    env_file:
+      - .env
+    restart: unless-stopped
+    mem_limit: ${TICKETMAKER_MEMORY_LIMIT:-512m}
+    networks:
+      - dw-net
+
+  detection-catalog:
+    build: ${DETECTION_CATALOG_PATH:-./_placeholder}
+    container_name: dw-detection-catalog
+    env_file:
+      - .env
+    restart: unless-stopped
+    mem_limit: ${DETECTION_CATALOG_MEMORY_LIMIT:-512m}
+    networks:
+      - dw-net
+
+  integration-adoption:
+    build: ${INTEGRATION_ADOPTION_PATH:-./_placeholder}
+    container_name: dw-integration-adoption
+    env_file:
+      - .env
+    restart: unless-stopped
+    mem_limit: ${INTEGRATION_ADOPTION_MEMORY_LIMIT:-1g}
+    networks:
+      - dw-net
+
+  integration-catalog:
+    build: ${INTEGRATION_CATALOG_PATH:-./_placeholder}
+    container_name: dw-integration-catalog
+    volumes:
+      - shared-data:/data:ro
+    env_file:
+      - .env
+    environment:
+      - DETECTION_CATALOG_PATH=/data/detection_catalog
+      - ADOPTION_DB_PATH=/data/analytics.duckdb
+    restart: unless-stopped
+    mem_limit: ${INTEGRATION_CATALOG_MEMORY_LIMIT:-512m}
+    networks:
+      - dw-net
+
+  cloud-live:
+    build: ${CLOUD_LIVE_PATH:-./_placeholder}
+    container_name: dw-cloud-live
+    env_file:
+      - .env
+    restart: unless-stopped
+    mem_limit: ${CLOUD_LIVE_MEMORY_LIMIT:-256m}
+    networks:
+      - dw-net
+
+  network-graph:
+    build: ${NETWORK_GRAPH_PATH:-./_placeholder}
+    container_name: dw-network-graph
+    env_file:
+      - .env
+    restart: unless-stopped
+    mem_limit: ${NETWORK_GRAPH_MEMORY_LIMIT:-512m}
+    networks:
+      - dw-net
+
+  okta-is:
+    build: ./apps/okta_is
+    container_name: dw-okta-is
+    env_file:
+      - .env
+    restart: unless-stopped
+    mem_limit: ${OKTA_IS_MEMORY_LIMIT:-256m}
+    networks:
+      - dw-net
+
+  analytic-stories:
+    build: ${ANALYTIC_STORIES_PATH:-./_placeholder}
+    container_name: dw-analytic-stories
+    env_file:
+      - .env
+    restart: unless-stopped
+    mem_limit: ${ANALYTIC_STORIES_MEMORY_LIMIT:-512m}
+    networks:
+      - dw-net
+
 volumes:
   admin-db:
-  app-data:
+  shared-data:
   ssl-certs:
 
 networks:
