@@ -122,7 +122,7 @@ services:
     build: ./apps/reports
     container_name: dw-reports
     volumes:
-      - admin-db:/data:ro
+      - admin-db:/data
     env_file:
       - .env
     environment:
