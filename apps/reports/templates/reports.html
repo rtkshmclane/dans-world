@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports -- Dan's World of AI Magic</title>
+    <style>
+        :root {
+            --aw-navy: #1B2A4A;
+            --aw-navy-light: #243659;
+            --aw-orange: #F37021;
+            --aw-orange-hover: #e06010;
+            --aw-white: #ffffff;
+            --aw-gray-100: #f5f6f8;
+            --aw-gray-200: #e8eaee;
+            --aw-gray-300: #d1d5db;
+            --aw-gray-500: #9ca3af;
+            --aw-gray-600: #6b7280;
+            --aw-gray-800: #374151;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--aw-gray-100);
+            color: var(--aw-gray-800);
+            min-height: 100vh;
+        }
+
+        .topbar {
+            background: var(--aw-navy);
+            color: var(--aw-white);
+            padding: 0 24px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .topbar-brand {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--aw-white);
+            text-decoration: none;
+        }
+
+        .topbar-brand .accent { color: var(--aw-orange); }
+
+        .topbar-nav { display: flex; align-items: center; gap: 16px; }
+
+        .topbar-nav a {
+            color: var(--aw-gray-300);
+            text-decoration: none;
+            font-size: 14px;
+            padding: 6px 12px;
+            border-radius: 4px;
+        }
+
+        .topbar-nav a:hover { background: var(--aw-navy-light); color: var(--aw-white); }
+        .topbar-nav a.active { background: var(--aw-orange); color: var(--aw-white); }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 500; }
+        .badge-green { background: #d1fae5; color: #065f46; }
+        .badge-orange { background: #ffedd5; color: #9a3412; }
+
+        .reports-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .reports-header h1 { font-size: 22px; color: var(--aw-navy); }
+        .reports-header p { color: var(--aw-gray-600); font-size: 14px; margin-top: 4px; }
+        .report-stats { display: flex; gap: 16px; }
+        .stat-pill { display: flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; background: white; border: 1px solid var(--aw-gray-200); }
+        .stat-pill .num { font-size: 16px; font-weight: 800; color: var(--aw-navy); }
+        .cat-nav { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
+        .cat-nav a { padding: 6px 14px; border-radius: 6px; font-size: 13px; font-weight: 600; text-decoration: none; color: var(--aw-gray-600); background: white; border: 1px solid var(--aw-gray-200); transition: all 0.15s; }
+        .cat-nav a:hover { border-color: var(--aw-orange); color: var(--aw-orange); }
+        .cat-nav a .count { display: inline-block; background: var(--aw-gray-100); color: var(--aw-gray-600); font-size: 11px; padding: 1px 6px; border-radius: 10px; margin-left: 4px; }
+        .cat-section { margin-bottom: 28px; }
+        .cat-section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid var(--aw-navy); }
+        .cat-section-header h2 { font-size: 16px; font-weight: 700; color: var(--aw-navy); margin: 0; }
+        .cat-section-header .cat-count { font-size: 12px; font-weight: 700; color: var(--aw-gray-600); background: var(--aw-gray-100); padding: 2px 10px; border-radius: 12px; }
+        .cat-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--aw-orange); flex-shrink: 0; }
+        .report-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 12px; }
+        .report-card { background: white; border: 1px solid var(--aw-gray-200); border-radius: 8px; padding: 14px 16px; transition: border-color 0.15s, box-shadow 0.15s; display: flex; flex-direction: column; }
+        .report-card:hover { border-color: var(--aw-orange); box-shadow: 0 2px 8px rgba(243, 112, 33, 0.1); }
+        .report-card-title { font-size: 14px; font-weight: 600; color: var(--aw-navy); margin-bottom: 4px; }
+        .report-card-title a { color: inherit; text-decoration: none; }
+        .report-card-title a:hover { color: var(--aw-orange); }
+        .report-card-desc { font-size: 12px; color: var(--aw-gray-600); margin-bottom: 8px; flex: 1; }
+        .report-card-meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        .meta-text { font-size: 11px; color: var(--aw-gray-500); }
+        .empty-state { text-align: center; padding: 64px 24px; color: var(--aw-gray-600); }
+        .empty-state h3 { font-size: 18px; color: var(--aw-navy); margin-bottom: 8px; }
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <a href="/" class="topbar-brand">
+            <span class="accent">//</span> Dan's World of AI Magic
+        </a>
+        <div class="topbar-nav">
+            <a href="/">Apps</a>
+            <a href="/reports" class="active">Reports</a>
+            <span style="color: var(--aw-gray-300); font-size: 13px;">{{ user }}</span>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="reports-header">
+            <div>
+                <h1>Reports</h1>
+                <p>Shared reports, briefs, and dashboards organized by category</p>
+            </div>
+            {% set total = grouped.values() | map('length') | sum %}
+            {% set public_count = [] %}
+            {% set private_count = [] %}
+            {% for cat, items in grouped.items() %}
+                {% for r in items %}
+                    {% if r.is_public %}
+                        {% if public_count.append(1) %}{% endif %}
+                    {% else %}
+                        {% if private_count.append(1) %}{% endif %}
+                    {% endif %}
+                {% endfor %}
+            {% endfor %}
+            <div class="report-stats">
+                <div class="stat-pill"><span class="num">{{ total }}</span> Total</div>
+                <div class="stat-pill"><span class="num">{{ public_count | length }}</span> Public</div>
+                <div class="stat-pill"><span class="num">{{ private_count | length }}</span> Private</div>
+            </div>
+        </div>
+
+        {% if grouped %}
+        <div class="cat-nav">
+            {% for cat, items in grouped.items() %}
+            <a href="#cat-{{ loop.index }}">{{ cat }}<span class="count">{{ items | length }}</span></a>
+            {% endfor %}
+        </div>
+
+        {% for cat, items in grouped.items() %}
+        <div class="cat-section" id="cat-{{ loop.index }}">
+            <div class="cat-section-header">
+                <span class="cat-dot"></span>
+                <h2>{{ cat }}</h2>
+                <span class="cat-count">{{ items | length }} report{{ 's' if items | length != 1 }}</span>
+            </div>
+            <div class="report-grid">
+                {% for r in items %}
+                <div class="report-card">
+                    <div class="report-card-title">
+                        <a href="/d/{{ r.id }}.html" target="_blank">{{ r.report_title or r.original_name }}</a>
+                    </div>
+                    {% if r.description %}
+                    <div class="report-card-desc">{{ r.description }}</div>
+                    {% endif %}
+                    <div class="report-card-meta">
+                        {% if r.is_public %}
+                            <span class="badge badge-green">Public</span>
+                        {% else %}
+                            <span class="badge badge-orange">Private</span>
+                        {% endif %}
+                        <span class="meta-text">{{ r.uploaded_by }}</span>
+                        <span class="meta-text">{{ r.uploaded_at[:10] if r.uploaded_at else '' }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+
+        {% else %}
+        <div style="background: white; border-radius: 8px; border: 1px solid var(--aw-gray-200);">
+            <div class="empty-state">
+                <h3>No reports available yet</h3>
+                <p>Reports will appear here once they are uploaded via the Drop Zone.</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

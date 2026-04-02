@@ -139,6 +139,20 @@ apps:
       local: ${ANALYTIC_STORIES_PATH}
     container: dw-analytic-stories
 
+  - id: reports
+    name: Reports
+    description: "Shared reports, briefs, and dashboards"
+    url: /apps/reports/
+    icon: report
+    groups: [analytics, admin]
+    author: Sam
+    port: 5010
+    health: /health
+    memory: 256m
+    source:
+      builtin: true
+    container: dw-reports
+
   - id: churn-explorer
     name: Churn Explorer
     description: "Q3'26 churn analysis -- tickets, ops, signals, competitor intel"

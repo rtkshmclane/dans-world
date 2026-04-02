@@ -118,6 +118,20 @@ services:
     networks:
       - dw-net
 
+  reports:
+    build: ./apps/reports
+    container_name: dw-reports
+    volumes:
+      - admin-db:/data:ro
+    env_file:
+      - .env
+    environment:
+      - ADMIN_DB_PATH=/data/admin.db
+    restart: unless-stopped
+    mem_limit: ${REPORTS_MEMORY_LIMIT:-256m}
+    networks:
+      - dw-net
+
   analytic-stories:
     build: ${ANALYTIC_STORIES_PATH:-./_placeholder}
     container_name: dw-analytic-stories
