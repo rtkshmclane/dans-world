@@ -68,6 +68,8 @@ services:
     container_name: dw-integration-adoption
     env_file:
       - .env
+    environment:
+      - ANALYTICS_DB_PATH=/app/analytics.duckdb
     restart: unless-stopped
     mem_limit: ${INTEGRATION_ADOPTION_MEMORY_LIMIT:-1g}
     networks:
@@ -103,6 +105,8 @@ services:
     container_name: dw-network-graph
     env_file:
       - .env
+    environment:
+      - NODE_ENV=production
     restart: unless-stopped
     mem_limit: ${NETWORK_GRAPH_MEMORY_LIMIT:-512m}
     networks:

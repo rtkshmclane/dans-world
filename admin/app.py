@@ -876,16 +876,14 @@ def system_status_data():
             req = urllib.request.Request(url, method="GET")
             resp = urllib.request.urlopen(req, timeout=5)
             code = str(resp.status)
-            if code == expected:
-                health.append({"name": name, "status": "up", "detail": f"HTTP {code}"})
-            else:
-                health.append({"name": name, "status": "down", "detail": f"HTTP {code} (expected {expected})"})
+            health.append({"name": name, "status": "up", "detail": f"HTTP {code}"})
         except urllib.error.HTTPError as e:
             code = str(e.code)
-            if code == expected:
-                health.append({"name": name, "status": "up", "detail": f"HTTP {code}"})
+            # 401/403 means the app is running (just requires auth)
+            if e.code in (401, 403):
+                health.append({"name": name, "status": "up", "detail": f"HTTP {code} (auth required)"})
             else:
-                health.append({"name": name, "status": "down", "detail": f"HTTP {code} (expected {expected})"})
+                health.append({"name": name, "status": "down", "detail": f"HTTP {code}"})
         except Exception as e:
             health.append({"name": name, "status": "down", "detail": str(e)[:80]})
     result["health"] = health

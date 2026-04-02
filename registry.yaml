@@ -41,7 +41,7 @@ apps:
       repo: rtkshmclane/CTOWorkspace
       path: 02_R_and_D/detection_catalog
       local: ${DETECTION_CATALOG_PATH}
-    container: dw-detections
+    container: dw-detection-catalog
 
   - id: adoption
     name: Integration Adoption
@@ -51,13 +51,13 @@ apps:
     groups: [analytics, admin]
     author: Sam
     port: 8501
-    health: /apps/adoption/
+    health: /apps/adoption/_stcore/health
     memory: 1g
     source:
       repo: rtkshmclane/CTOWorkspace
       path: 03_Product/integration_adoption/analytics
       local: ${INTEGRATION_ADOPTION_PATH}
-    container: dw-adoption
+    container: dw-integration-adoption
     websocket: true
 
   - id: catalog
@@ -74,7 +74,7 @@ apps:
       repo: rtkshmclane/CTOWorkspace
       path: 03_Product/integration_catalog/dashboard
       local: ${INTEGRATION_CATALOG_PATH}
-    container: dw-catalog
+    container: dw-integration-catalog
     depends_on: [detections, adoption]
 
   - id: cloud-live
