@@ -5,3 +5,4 @@ PyJWT>=2.8.0
 bcrypt>=4.1.0
 python-dotenv>=1.0.0
 flask-sock>=0.7.0
+PyYAML>=6.0

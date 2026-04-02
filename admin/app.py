@@ -17,6 +17,7 @@ import sqlite3
 import datetime
 import functools
 
+import yaml
 import jwt
 import bcrypt
 from flask import (
@@ -50,172 +51,44 @@ JWT_EXPIRY_HOURS = 24
 COOKIE_NAME = "dw_session"
 
 # ---------------------------------------------------------------------------
-# App registry -- defines all apps and their group requirements
+# App registry -- loaded from registry.yaml (single source of truth)
 # ---------------------------------------------------------------------------
-APP_REGISTRY = [
-    {
-        "id": "ticketmaker",
-        "name": "Ticketmaker",
-        "description": "Ticket analysis and viewer",
-        "url": "/apps/ticketmaker/",
-        "icon": "ticket",
-        "groups": ["analytics", "admin"],
-        "author": "Sam",
-    },
-    {
-        "id": "detections",
-        "name": "Detection Catalog",
-        "description": "2,496 detections with MITRE ATT&CK mappings",
-        "url": "/apps/detections/",
-        "icon": "shield",
-        "groups": ["analytics", "admin"],
-        "author": "Sam",
-    },
-    {
-        "id": "adoption",
-        "name": "Integration Adoption",
-        "description": "Adoption analytics across 14,507 customers",
-        "url": "/apps/adoption/",
-        "icon": "chart",
-        "groups": ["analytics", "admin"],
-        "author": "Sam",
-    },
-    {
-        "id": "catalog",
-        "name": "Integration Catalog",
-        "description": "Integration battle cards and competitive intel",
-        "url": "/apps/catalog/",
-        "icon": "catalog",
-        "groups": ["analytics", "admin"],
-        "author": "Sam",
-    },
-    {
-        "id": "cloud-live",
-        "name": "Aurora Cloud Live",
-        "description": "Cloud security dashboard (Wiz integration)",
-        "url": "/apps/cloud-live/",
-        "icon": "cloud",
-        "groups": ["engineering", "admin"],
-        "author": "Sam",
-    },
-    {
-        "id": "okta-is",
-        "name": "Okta Identity Inspector",
-        "description": "Decode JWT claims from Okta/Prisma ZTNA for authorization planning",
-        "url": "/apps/okta-is/",
-        "icon": "shield",
-        "groups": ["analytics", "admin"],
-        "author": "Sam",
-    },
-    {
-        "id": "analytic-stories",
-        "name": "Analytic Stories",
-        "description": "Attack chains and detection coverage mapped to MITRE ATT&CK",
-        "url": "/apps/analytic-stories/",
-        "icon": "shield",
-        "groups": ["analytics", "admin"],
-        "author": "Yeti",
-    },
-    {
-        "id": "network-graph",
-        "name": "Network Graph Playground",
-        "description": "Entity relationship graphs from tickets and cases",
-        "url": "/apps/network-graph/",
-        "icon": "graph",
-        "groups": ["analytics", "admin"],
-        "author": "Sam",
-    },
-    {
-        "id": "aurora-xdr-lite",
-        "name": "Aurora XDR Lite",
-        "description": "XDR dashboard, detections, hunting, workbench",
-        "url": "/demos/point-products/aurora_xdr_lite_v4/aw_home.html",
-        "icon": "demo",
-        "groups": ["demos", "admin"],
-        "author": "Sam",
-    },
-    {
-        "id": "aurora-mobile",
-        "name": "Aurora Mobile Threat Defense",
-        "description": "Mobile device security, app inventory, phishing",
-        "url": "/demos/point-products/aurora_mobile_threat_defense/aw_home.html",
-        "icon": "demo",
-        "groups": ["demos", "admin"],
-        "author": "Sam",
-    },
-    {
-        "id": "managed-cloud",
-        "name": "Managed Cloud Security",
-        "description": "Cloud posture, findings, compliance, security graph",
-        "url": "/demos/point-products/aw_managed_cloud/aw_home.html",
-        "icon": "demo",
-        "groups": ["demos", "admin"],
-        "author": "Sam",
-    },
-    {
-        "id": "managed-identity",
-        "name": "Managed Identity",
-        "description": "Identity explorer, MITRE mapping, i18n (7 languages)",
-        "url": "/demos/point-products/aw_managed_identity/aw_home.html",
-        "icon": "demo",
-        "groups": ["demos", "admin"],
-        "author": "Sam",
-    },
-    {
-        "id": "rsac-v3",
-        "name": "RSAC Agentic Demo",
-        "description": "RSAC 2026 agentic AI demo",
-        "url": "/demos/rsac-v3/",
-        "icon": "demo",
-        "groups": ["demos", "admin"],
-        "author": "Sam",
-    },
-    {
-        "id": "rsac-wherewolf",
-        "name": "RSAC WhereWolf",
-        "description": "WhereWolf threat hunting demo",
-        "url": "/demos/rsac-wherewolf/",
-        "icon": "demo",
-        "groups": ["demos", "admin"],
-        "author": "Sam",
-    },
-    {
-        "id": "compliance",
-        "name": "Compliance Reporting",
-        "description": "Compliance report templates and viewer",
-        "url": "/demos/compliance/",
-        "icon": "compliance",
-        "groups": ["demos", "admin"],
-        "author": "Sam",
-    },
-    {
-        "id": "customer-portal",
-        "name": "Customer Portal",
-        "description": "Next-gen customer portal prototype",
-        "url": "/demos/customer-portal/",
-        "icon": "demo",
-        "groups": ["demos", "admin"],
-        "author": "Andrew D'Angelo",
-    },
-    {
-        "id": "command-centre-ng",
-        "name": "Command Centre NG",
-        "description": "Next-gen Command Centre prototype",
-        "url": "/demos/command-centre-ng/",
-        "icon": "demo",
-        "groups": ["demos", "admin"],
-        "author": "Doug Akers",
-    },
-    {
-        "id": "churn-explorer",
-        "name": "Churn Explorer",
-        "description": "Q3'26 churn analysis -- tickets, ops, signals, competitor intel",
-        "url": "/demos/churn-explorer/",
-        "icon": "churn",
-        "groups": ["analytics", "admin"],
-        "author": "Sam",
-    },
-]
+REGISTRY_PATH = os.environ.get("REGISTRY_PATH", "/app/registry.yaml")
+
+
+def load_registry():
+    """Load apps + demos from registry.yaml into a flat list for the landing page."""
+    with open(REGISTRY_PATH) as f:
+        reg = yaml.safe_load(f)
+
+    entries = []
+    for app_def in reg.get("apps", []):
+        entries.append({
+            "id": app_def["id"],
+            "name": app_def["name"],
+            "description": app_def.get("description", ""),
+            "url": app_def["url"],
+            "icon": app_def.get("icon", "app"),
+            "groups": app_def.get("groups", ["admin"]),
+            "author": app_def.get("author", ""),
+            "container": app_def.get("container"),
+            "port": app_def.get("port"),
+            "health": app_def.get("health"),
+        })
+    for demo in reg.get("demos", []):
+        entries.append({
+            "id": demo["id"],
+            "name": demo["name"],
+            "description": demo.get("description", ""),
+            "url": demo["url"],
+            "icon": demo.get("icon", "demo"),
+            "groups": demo.get("groups", ["demos", "admin"]),
+            "author": demo.get("author", ""),
+        })
+    return entries
+
+
+APP_REGISTRY = load_registry()
 
 # ---------------------------------------------------------------------------
 # Database setup
@@ -979,20 +852,20 @@ def system_status_data():
 
     result = {}
 
-    # --- App Health ---
+    # --- App Health (dynamically built from registry) ---
     health = []
     endpoints = [
         ("Gateway (nginx)", "dw-gateway", "http://localhost:80", "301"),
         ("Admin (Flask)", "dw-admin", "http://localhost:5050/health", "200"),
-        ("Ticketmaker", "dw-apps", "http://localhost:5000/", "200"),
-        ("Detection Catalog", "dw-apps", "http://localhost:5555/", "200"),
-        ("Integration Adoption", "dw-apps", "http://localhost:8501/apps/adoption/", "200"),
-        ("Integration Catalog", "dw-apps", "http://localhost:5001/api/integrations", "200"),
-        ("Cloud Live", "dw-apps", "http://localhost:5004/", "200"),
-        ("Network Graph", "dw-apps", "http://localhost:3334/", "200"),
-        ("Okta IS", "dw-apps", "http://localhost:5005/health", "200"),
-        ("Analytic Stories", "dw-apps", "http://localhost:8089/api/v1/stats", "200"),
     ]
+    # Add containerized apps from registry
+    for entry in APP_REGISTRY:
+        container = entry.get("container")
+        port = entry.get("port")
+        health_path = entry.get("health")
+        if container and port and health_path:
+            url = f"http://localhost:{port}{health_path}"
+            endpoints.append((entry["name"], container, url, "200"))
     for name, container, url, expected in endpoints:
         try:
             out = subprocess.run(
@@ -1151,27 +1024,17 @@ def system_status_data():
         pass
     result["active_users"] = active_users
 
-    # --- Recent Errors ---
+    # --- Recent Errors (from per-container docker logs) ---
     recent_errors = []
     try:
-        for svc in SUPERVISORD_SERVICES:
+        for svc in CONTAINER_SERVICES:
             err_out = subprocess.run(
-                ["docker", "exec", "dw-apps", "tail", "-n", "5",
-                 f"/var/log/supervisor/{svc}-err.log"],
+                ["docker", "logs", "--tail", "10", svc["container"]],
                 capture_output=True, text=True, timeout=5,
             )
-            for line in err_out.stdout.strip().splitlines():
-                if line.strip():
-                    recent_errors.append({"source": svc, "line": line[:200]})
-
-        # Also check gateway error log
-        gw_err = subprocess.run(
-            ["docker", "logs", "--tail", "10", "dw-gateway"],
-            capture_output=True, text=True, timeout=5,
-        )
-        for line in gw_err.stderr.splitlines():
-            if "error" in line.lower() or "emerg" in line.lower():
-                recent_errors.append({"source": "gateway", "line": line[:200]})
+            for line in err_out.stderr.splitlines():
+                if "error" in line.lower() or "emerg" in line.lower() or "traceback" in line.lower():
+                    recent_errors.append({"source": svc["name"], "line": line[:200]})
     except Exception:
         pass
     result["recent_errors"] = recent_errors[-20:]  # Last 20
@@ -1183,17 +1046,22 @@ def system_status_data():
 # Log Viewer (Dozzle-style)
 # ---------------------------------------------------------------------------
 
-SUPERVISORD_SERVICES = [
-    "ticketmaker", "detection_catalog", "integration_adoption",
-    "integration_catalog", "cloud_live", "network_graph", "okta_is",
-    "analytic_stories",
+# Build container list from registry for log viewer
+CONTAINER_SERVICES = [
+    {"name": "gateway", "container": "dw-gateway"},
+    {"name": "admin", "container": "dw-admin"},
 ]
+for _entry in APP_REGISTRY:
+    if _entry.get("container"):
+        _svc_name = _entry["id"]
+        CONTAINER_SERVICES.append({"name": _svc_name, "container": _entry["container"]})
 
 
 @app.route("/admin/logs")
 @require_admin
 def log_viewer():
-    return render_template("logs.html", user=g.user, services=SUPERVISORD_SERVICES)
+    services = [s["name"] for s in CONTAINER_SERVICES]
+    return render_template("logs.html", user=g.user, services=services)
 
 
 @app.route("/admin/logs/stream")
@@ -1231,41 +1099,13 @@ def log_stream():
         except Exception:
             pass
 
-    def tail_supervisord(service):
-        """Tail a supervisord log file inside dw-apps."""
-        try:
-            proc = subprocess.Popen(
-                ["docker", "exec", "dw-apps", "tail", "-f", "-n", "30",
-                 f"/var/log/supervisor/{service}.log"],
-                stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-            )
-            for raw in proc.stdout:
-                line = raw.decode("utf-8", errors="replace").rstrip()
-                if not line:
-                    continue
-                try:
-                    q.put_nowait({"source": service, "line": line, "ts": ""})
-                except queue.Full:
-                    pass
-        except Exception:
-            pass
-
     def generate():
-        # Start tailer threads
+        # Start a tailer thread for each container
         threads = []
-        for cname, sname in [("dw-gateway", "gateway"), ("dw-admin", "admin")]:
-            t = threading.Thread(target=tail_docker, args=(cname, sname), daemon=True)
-            t.start()
-            threads.append(t)
-
-        for svc in SUPERVISORD_SERVICES:
-            t = threading.Thread(target=tail_supervisord, args=(svc,), daemon=True)
-            t.start()
-            threads.append(t)
-
-        # Also tail supervisord error logs
-        for svc in SUPERVISORD_SERVICES:
-            t = threading.Thread(target=lambda s: tail_supervisord_err(s, q), args=(svc,), daemon=True)
+        for svc in CONTAINER_SERVICES:
+            t = threading.Thread(
+                target=tail_docker, args=(svc["container"], svc["name"]), daemon=True
+            )
             t.start()
             threads.append(t)
 
@@ -1277,25 +1117,6 @@ def log_stream():
                 except queue.Empty:
                     yield ": keepalive\n\n"
         except GeneratorExit:
-            pass
-
-    def tail_supervisord_err(service, q):
-        """Tail supervisord error log."""
-        try:
-            proc = subprocess.Popen(
-                ["docker", "exec", "dw-apps", "tail", "-f", "-n", "10",
-                 f"/var/log/supervisor/{service}-err.log"],
-                stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-            )
-            for raw in proc.stdout:
-                line = raw.decode("utf-8", errors="replace").rstrip()
-                if not line:
-                    continue
-                try:
-                    q.put_nowait({"source": service, "line": line, "ts": ""})
-                except queue.Full:
-                    pass
-        except Exception:
             pass
 
     return app.response_class(generate(), mimetype="text/event-stream")
