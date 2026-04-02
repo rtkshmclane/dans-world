@@ -870,18 +870,24 @@ def system_status_data():
             svc_name = container.replace("dw-", "")
             endpoints.append((entry["name"], svc_name, port, health_path, "200"))
 
+    class _NoRedirect(urllib.request.HTTPRedirectHandler):
+        def redirect_request(self, req, fp, code, msg, headers, newurl):
+            return None  # Don't follow redirects
+
+    no_redir_opener = urllib.request.build_opener(_NoRedirect)
+
     for name, host, port, path, expected in endpoints:
         try:
             url = f"http://{host}:{port}{path}"
             req = urllib.request.Request(url, method="GET")
-            resp = urllib.request.urlopen(req, timeout=5)
+            resp = no_redir_opener.open(req, timeout=5)
             code = str(resp.status)
             health.append({"name": name, "status": "up", "detail": f"HTTP {code}"})
         except urllib.error.HTTPError as e:
             code = str(e.code)
-            # 401/403 means the app is running (just requires auth)
-            if e.code in (401, 403):
-                health.append({"name": name, "status": "up", "detail": f"HTTP {code} (auth required)"})
+            # 3xx = redirect (service is responding), 401/403 = auth required
+            if 300 <= e.code < 400 or e.code in (401, 403):
+                health.append({"name": name, "status": "up", "detail": f"HTTP {code}"})
             else:
                 health.append({"name": name, "status": "down", "detail": f"HTTP {code}"})
         except Exception as e:
