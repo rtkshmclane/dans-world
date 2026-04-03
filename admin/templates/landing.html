@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 {% set active_page = "home" %}
-{% set default_theme = 'pokemon' if (user and user.sub == 'ckraft') else 'ucf' if (user and user.sub == 'dschiappa') else 'nohug' if (user and user.sub == 'msetzer') else 'default' %}
+{% set default_theme = 'pokemon' if (user and user.sub == 'ckraft') else 'ucf' if (user and user.sub == 'dschiappa') else 'nohug' if (user and user.sub == 'msetzer') else 'cowboys' if (user and user.sub == 'lroush') else 'default' %}
 {% set show_switcher = user and user.sub in ['shmclane'] %}
-{% set show_toggle = user and user.sub in ['ckraft', 'dschiappa', 'msetzer'] %}
+{% set show_toggle = user and user.sub in ['ckraft', 'dschiappa', 'msetzer', 'lroush'] %}
 
 {% block title %}Dan's World of AI Magic{% endblock %}
 
@@ -331,6 +331,13 @@
     .poke-type-pill.fighting { background: #C03028; }
     .poke-evolution { font-size: 9px; color: #888; font-style: italic; margin-left: auto; }
 
+    /* App name label */
+    .poke-card-app-name {
+        font-size: 12px; font-weight: 700; color: #002244;
+        text-align: center; padding: 4px 0 2px;
+        border-top: 1px solid #ccc;
+        letter-spacing: 0.03em;
+    }
     /* Description as "flavor text" */
     .poke-card-desc {
         font-size: 11px; color: #444; font-style: italic;
@@ -426,7 +433,7 @@
     body.theme-ucf .hero-stat-label { color: rgba(186,155,55,0.5) !important; }
     body.theme-ucf .hero-emblem.ucf { display: block; }
 
-    .hero-emblem.ucf { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    body.theme-ucf .hero-emblem.ucf { display: flex; flex-direction: column; align-items: center; gap: 4px; }
     .hero-emblem.ucf .ucf-shield { width: 72px; height: 72px; animation: knightFloat 3s ease-in-out infinite; filter: drop-shadow(0 0 20px rgba(186,155,55,0.5)); }
     @keyframes knightFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
     .hero-emblem.ucf .ucf-text { font-family: 'Georgia', serif; font-size: 11px; font-weight: 700; color: #BA9B37; letter-spacing: 0.3em; text-transform: uppercase; text-shadow: 0 0 10px rgba(186,155,55,0.4); }
@@ -547,6 +554,13 @@
         color: #666; font-weight: 600;
     }
 
+    /* App name in UCF card */
+    .ucf-card-app-name {
+        padding: 6px 14px 2px; font-size: 12px; font-weight: 700;
+        color: #BA9B37; background: #0a0a0a;
+        text-align: center; letter-spacing: 0.05em;
+        border-top: 1px solid #222;
+    }
     /* Description bar */
     .ucf-card-desc {
         padding: 8px 14px; font-size: 11px; color: #999;
@@ -684,6 +698,77 @@
     body.theme-nohug .status-pip-label { color: #444 !important; }
     body.theme-nohug .container { color: #aaa; }
 
+    /* ================================================================
+       COWBOYS THEME -- Lane Roush
+       "America's Team" ... since 1995
+       ================================================================ */
+
+    body.theme-cowboys .hero {
+        background: linear-gradient(135deg, #002244 0%, #00338D 40%, #002244 100%) !important;
+    }
+    body.theme-cowboys .hero::before {
+        background:
+            radial-gradient(circle at 30% 50%, rgba(192,192,192,0.08) 0%, transparent 50%),
+            radial-gradient(circle at 70% 30%, rgba(255,255,255,0.04) 0%, transparent 40%) !important;
+    }
+    body.theme-cowboys .hero::after {
+        background-image: none !important;
+        /* Subtle star pattern */
+        background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80' opacity='0.03'%3E%3Cpolygon points='40,5 48,30 75,30 53,45 61,72 40,55 19,72 27,45 5,30 32,30' fill='white'/%3E%3C/svg%3E") repeat !important;
+        background-size: 80px 80px !important;
+        animation: none !important;
+        opacity: 1 !important;
+    }
+
+    body.theme-cowboys .hero h1 .accent { color: #C0C0C0 !important; }
+    body.theme-cowboys .hero h1 { text-shadow: 1px 1px 0 rgba(0,0,0,0.3) !important; }
+    body.theme-cowboys .hero-subtitle { color: rgba(192,192,192,0.6) !important; }
+    body.theme-cowboys .hero-stat-value { color: #fff !important; }
+    body.theme-cowboys .hero-stat-value .pulse-dot { background: #C0C0C0 !important; }
+    body.theme-cowboys .hero-stat-label { color: rgba(192,192,192,0.5) !important; }
+    body.theme-cowboys .hero-emblem.cowboys { display: block; }
+    body.theme-cowboys .hero-emblem.default-logo { display: none; }
+
+    body.theme-cowboys .hero-emblem.cowboys { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .hero-emblem.cowboys .cowboys-star {
+        width: 72px; height: 72px;
+        filter: drop-shadow(0 0 15px rgba(192,192,192,0.3));
+    }
+    .hero-emblem.cowboys .cowboys-text {
+        font-size: 10px; font-weight: 700; color: #C0C0C0;
+        letter-spacing: 0.2em; text-transform: uppercase;
+    }
+
+    body.theme-cowboys .section-label {
+        border-left: 4px solid #002244 !important;
+        color: #002244 !important;
+    }
+    body.theme-cowboys .section-count { background: #002244 !important; color: #C0C0C0 !important; }
+
+    body.theme-cowboys .app-card {
+        border: 1px solid #d8dce2 !important;
+        background: linear-gradient(180deg, #fff 0%, #f5f7fa 100%) !important;
+    }
+    body.theme-cowboys .app-card::before {
+        height: 3px !important;
+        background: linear-gradient(90deg, #002244, #C0C0C0, #002244) !important;
+        opacity: 1 !important;
+    }
+    body.theme-cowboys .app-card:hover {
+        border-color: #002244 !important;
+        box-shadow: 0 12px 32px rgba(0,34,68,0.12) !important;
+    }
+    body.theme-cowboys .app-card-title { color: #002244 !important; }
+    body.theme-cowboys .app-card-icon { border: 2px solid #002244 !important; }
+
+    /* Subtle counter in the footer */
+    body.theme-cowboys .cowboys-drought {
+        display: inline-block !important;
+        font-size: 9px; color: #999; font-style: italic;
+    }
+
+    body.theme-cowboys { background: #eef0f4 !important; }
+
     /* ── Responsive ──────────────────────────────────────────── */
     @media (max-width: 640px) {
         .hero { padding: 32px 20px; }
@@ -728,6 +813,13 @@
             </svg>
             <span class="ucf-text">Charge On</span>
         </div>
+        <div class="hero-emblem cowboys">
+            <svg class="cowboys-star" viewBox="0 0 100 100">
+                <polygon points="50,5 61,35 95,35 67,55 78,88 50,68 22,88 33,55 5,35 39,35" fill="none" stroke="#C0C0C0" stroke-width="3"/>
+                <polygon points="50,15 58,35 80,35 62,48 70,70 50,56 30,70 38,48 20,35 42,35" fill="#002244" stroke="#C0C0C0" stroke-width="1"/>
+            </svg>
+            <span class="cowboys-text">America's Team</span>
+        </div>
         <div class="hero-emblem nohug">
             <span class="nohug-banner-text">don't fucking hug me</span>
             <span class="nohug-banner-sub"></span>
@@ -739,19 +831,19 @@
         <div class="hero-stats">
             <div class="hero-stat">
                 <span class="hero-stat-value">{{ ns.analytics | length }}<span class="pulse-dot"></span></span>
-                <span class="hero-stat-label" data-default="Live Apps" data-pokemon="Caught" data-ucf="Active" data-nohug="Apps">Live Apps</span>
+                <span class="hero-stat-label" data-default="Live Apps" data-pokemon="Caught" data-ucf="Active" data-nohug="Apps" data-cowboys="Live Apps">Live Apps</span>
             </div>
             <div class="hero-stat">
                 <span class="hero-stat-value">{{ ns.demos | length }}</span>
-                <span class="hero-stat-label" data-default="Demos" data-pokemon="In the Wild" data-ucf="Demos" data-nohug="Demos">Demos</span>
+                <span class="hero-stat-label" data-default="Demos" data-pokemon="In the Wild" data-ucf="Demos" data-nohug="Demos" data-cowboys="Demos">Demos</span>
             </div>
             <div class="hero-stat">
                 <span class="hero-stat-value">{{ ns.engineering | length }}</span>
-                <span class="hero-stat-label" data-default="Engineering" data-pokemon="Evolving" data-ucf="Engineering" data-nohug="Eng">Engineering</span>
+                <span class="hero-stat-label" data-default="Engineering" data-pokemon="Evolving" data-ucf="Engineering" data-nohug="Eng" data-cowboys="Engineering">Engineering</span>
             </div>
             <div class="hero-stat">
                 <span class="hero-stat-value" id="uptime-value">--</span>
-                <span class="hero-stat-label" data-default="Uptime" data-pokemon="Trainer Level" data-ucf="Game Time" data-nohug="Uptime">Uptime</span>
+                <span class="hero-stat-label" data-default="Uptime" data-pokemon="Trainer Level" data-ucf="Game Time" data-nohug="Uptime" data-cowboys="Since Last Ring">Uptime</span>
             </div>
         </div>
     </div>
@@ -803,6 +895,7 @@
                 <span class="poke-card-value" data-idx="{{ idx }}"></span>
                 <span class="poke-evolution" data-idx="{{ idx }}"></span>
             </div>
+            <div class="poke-card-app-name">{{ app.name }}</div>
             <div class="poke-card-desc">{{ app.description }}</div>
             <div class="poke-card-attacks">
                 <div class="poke-attack">
@@ -853,6 +946,7 @@
             <div class="ucf-card-stat"><span class="stat-val ucf-stat-2" data-idx="{{ idx }}">88</span><span class="stat-label">SPD</span></div>
             <div class="ucf-card-stat"><span class="stat-val ucf-stat-3" data-idx="{{ idx }}">95</span><span class="stat-label">PWR</span></div>
         </div>
+        <div class="ucf-card-app-name">{{ app.name }}</div>
         <div class="ucf-card-desc">{{ app.description }}</div>
         <div class="ucf-card-footer">
             <span class="ucf-conf-badge">Big 12 Conference</span>
@@ -885,7 +979,7 @@
 
 {% if ns.analytics %}
 <div class="section-label">
-    <span data-default="Analytics & Intelligence" data-pokemon="Legendary Pokemon" data-ucf="Offensive Lineup" data-nohug="Analytics">Analytics & Intelligence</span>
+    <span data-default="Analytics & Intelligence" data-pokemon="Legendary Pokemon" data-ucf="Offensive Lineup" data-nohug="Analytics" data-cowboys="First String">Analytics & Intelligence</span>
     <span class="section-count">{{ ns.analytics | length }}</span>
 </div>
 <div class="app-grid">
@@ -897,7 +991,7 @@
 
 {% if ns.engineering %}
 <div class="section-label">
-    <span data-default="Engineering Tools" data-pokemon="Rare Pokemon" data-ucf="Special Teams" data-nohug="Engineering">Engineering Tools</span>
+    <span data-default="Engineering Tools" data-pokemon="Rare Pokemon" data-ucf="Special Teams" data-nohug="Engineering" data-cowboys="Practice Squad">Engineering Tools</span>
     <span class="section-count">{{ ns.engineering | length }}</span>
 </div>
 <div class="app-grid">
@@ -909,7 +1003,7 @@
 
 {% if ns.demos %}
 <div class="section-label">
-    <span data-default="Demos & Presentations" data-pokemon="Wild Pokemon" data-ucf="Defensive Formation" data-nohug="Demos">Demos & Presentations</span>
+    <span data-default="Demos & Presentations" data-pokemon="Wild Pokemon" data-ucf="Defensive Formation" data-nohug="Demos" data-cowboys="Preseason Highlights">Demos & Presentations</span>
     <span class="section-count">{{ ns.demos | length }}</span>
 </div>
 <div class="app-grid">
@@ -926,6 +1020,7 @@
     <button class="theme-btn" data-theme="pokemon" onclick="setTheme('pokemon')">Pokemon</button>
     <button class="theme-btn" data-theme="ucf" onclick="setTheme('ucf')">UCF</button>
     <button class="theme-btn" data-theme="nohug" onclick="setTheme('nohug')">DFHM</button>
+    <button class="theme-btn" data-theme="cowboys" onclick="setTheme('cowboys')">DAL</button>
 </div>
 {% elif show_toggle %}
 <div class="theme-switcher">
@@ -942,6 +1037,7 @@ const THEMES = {
     default: { accent: '//', title: "Dan's World of AI Magic", subtitle: 'CTO Office -- Research, Prototypes & Development' },
     pokemon: { accent: '\u26A1', title: "Professor Kraft's Pokemon Lab", subtitle: "Gotta catch 'em all -- Security Analytics Edition" },
     ucf:     { accent: '//', title: "Dan's World of AI Magic", subtitle: 'CHARGE ON \u2022 CTO OFFICE \u2022 GO KNIGHTS' },
+    cowboys: { accent: '\u2606', title: "Dan's World of AI Magic", subtitle: "America's Team \u2022 Powered by Hope Since 1995" },
     nohug:   { accent: '$', title: "dans-world", subtitle: '' }
 };
 
@@ -1013,6 +1109,16 @@ function setTheme(name) {
 
     if (name === 'pokemon') initPokemonCards();
     if (name === 'ucf') initUCFCards();
+    if (name === 'cowboys') initCowboysTheme();
+}
+
+function initCowboysTheme() {
+    // Calculate years since last Super Bowl win (Jan 28, 1996 = SB XXX)
+    const lastRing = new Date(1996, 0, 28);
+    const now = new Date();
+    const years = now.getFullYear() - lastRing.getFullYear();
+    const days = Math.floor((now - lastRing) / (1000 * 60 * 60 * 24));
+    document.getElementById('uptime-value').textContent = years + 'yr';
 }
 
 function initPokemonCards() {
