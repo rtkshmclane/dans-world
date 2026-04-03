@@ -567,70 +567,88 @@
 
     /* ================================================================
        DON'T FUCKING HUG ME THEME -- Matt Setzer
+       vi, not emacs. Monospace everything. No gradients. No animations.
        ================================================================ */
 
+    body.theme-nohug, body.theme-nohug * {
+        font-family: 'SF Mono', 'Menlo', 'Monaco', 'Consolas', 'Liberation Mono', monospace !important;
+    }
+    body.theme-nohug { background: #000 !important; color: #aaa !important; }
+
+    /* Hero = one-line banner, nothing else */
     body.theme-nohug .hero {
-        background: #111 !important;
-        padding: 32px 32px 28px !important;
+        background: #000 !important;
+        padding: 12px 24px !important;
+        margin: -24px -24px 0 -24px !important;
+        border-bottom: 1px solid #333 !important;
     }
     body.theme-nohug .hero::before,
     body.theme-nohug .hero::after { display: none !important; }
+    body.theme-nohug .hero-inner { display: flex; align-items: center; gap: 24px; }
+    body.theme-nohug .hero h1 { font-size: 14px !important; color: #aaa !important; font-weight: 400 !important; white-space: nowrap; }
+    body.theme-nohug .hero h1 .accent { color: #aaa !important; }
+    body.theme-nohug .hero-subtitle { display: none !important; }
+    body.theme-nohug .hero-stats { margin-top: 0 !important; gap: 16px !important; }
+    body.theme-nohug .hero-stat { flex-direction: row !important; gap: 4px !important; align-items: baseline; }
+    body.theme-nohug .hero-stat-value { font-size: 14px !important; color: #aaa !important; font-weight: 400 !important; }
+    body.theme-nohug .hero-stat-value .pulse-dot { display: none !important; }
+    body.theme-nohug .hero-stat-label { font-size: 12px !important; color: #666 !important; text-transform: none !important; letter-spacing: 0 !important; }
+    body.theme-nohug .hero-emblem.nohug { display: block; position: static !important; margin-left: auto; }
 
-    body.theme-nohug .hero h1 { font-size: 28px !important; color: #fff !important; font-weight: 400 !important; }
-    body.theme-nohug .hero h1 .accent { color: #ff4444 !important; }
-    body.theme-nohug .hero-subtitle { color: #666 !important; }
-    body.theme-nohug .hero-stat-value { color: #fff !important; font-size: 24px !important; }
-    body.theme-nohug .hero-stat-value .pulse-dot { background: #ff4444 !important; }
-    body.theme-nohug .hero-stat-label { color: #555 !important; }
-    body.theme-nohug .hero-emblem.nohug { display: block; }
+    .hero-emblem.nohug .nohug-banner-text {
+        font-family: 'SF Mono', 'Menlo', monospace;
+        font-size: 12px; color: #666; letter-spacing: 0;
+        text-transform: none; line-height: 1; white-space: nowrap;
+    }
+    .hero-emblem.nohug .nohug-banner-sub { display: none; }
 
-    .hero-emblem.nohug {
-        display: flex; flex-direction: column; align-items: flex-end; gap: 0;
-    }
-    .nohug-banner-text {
-        font-family: 'Impact', 'Arial Black', sans-serif;
-        font-size: 16px; color: #ff4444; letter-spacing: 0.15em;
-        text-transform: uppercase; line-height: 1.1;
-    }
-    .nohug-banner-sub {
-        font-size: 10px; color: #555; letter-spacing: 0.1em; text-transform: uppercase;
-    }
-
+    /* Sections: just a line */
     body.theme-nohug .section-label {
-        border-left-color: #ff4444 !important;
-        color: #888 !important;
-        font-size: 11px !important;
-        letter-spacing: 0.15em !important;
+        border-left: none !important;
+        padding-left: 0 !important;
+        color: #666 !important;
+        font-size: 12px !important;
+        letter-spacing: 0 !important;
+        text-transform: none !important;
+        margin-top: 16px !important;
+        margin-bottom: 8px !important;
+        border-bottom: 1px solid #222 !important;
+        padding-bottom: 4px !important;
     }
-    body.theme-nohug .section-count { background: #222 !important; color: #ff4444 !important; }
+    body.theme-nohug .section-count { background: none !important; color: #555 !important; padding: 0 !important; }
 
+    /* Cards: flat list items, not cards */
+    body.theme-nohug .app-grid {
+        grid-template-columns: 1fr !important;
+        gap: 0 !important;
+    }
     body.theme-nohug .app-card {
-        background: #1a1a1a !important;
-        border: 1px solid #333 !important;
-        border-radius: 4px !important;
+        background: transparent !important;
+        border: none !important;
+        border-bottom: 1px solid #1a1a1a !important;
+        border-radius: 0 !important;
+        padding: 8px 0 !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: 12px !important;
     }
-    body.theme-nohug .app-card::before {
-        background: #ff4444 !important; height: 2px !important; opacity: 0 !important;
-    }
+    body.theme-nohug .app-card::before { display: none !important; }
     body.theme-nohug .app-card:hover {
-        border-color: #ff4444 !important;
-        box-shadow: none !important;
         transform: none !important;
+        box-shadow: none !important;
+        border-color: #333 !important;
+        background: #0a0a0a !important;
     }
-    body.theme-nohug .app-card:hover::before { opacity: 1 !important; }
-    body.theme-nohug .app-card-title { color: #eee !important; }
-    body.theme-nohug .app-card p { color: #888 !important; }
-    body.theme-nohug .app-card-icon {
-        background: #222 !important; border-radius: 4px !important;
-        border: 1px solid #444 !important;
-    }
-    body.theme-nohug .app-card-icon svg { color: #ff4444 !important; }
-    body.theme-nohug .author-badge { background: #222 !important; color: #888 !important; }
-    body.theme-nohug .status-pip { background: #ff4444 !important; }
-    body.theme-nohug .status-pip-label { color: #555 !important; }
-
-    body.theme-nohug { background: #0d0d0d !important; }
-    body.theme-nohug .container { color: #ccc; }
+    body.theme-nohug .app-card-icon { display: none !important; }
+    body.theme-nohug .app-card-header { gap: 0 !important; }
+    body.theme-nohug .app-card-title { font-size: 13px !important; color: #ccc !important; font-weight: 400 !important; }
+    body.theme-nohug .app-card:hover .app-card-title { color: #fff !important; }
+    body.theme-nohug .app-card p { font-size: 12px !important; color: #555 !important; margin: 0 !important; }
+    body.theme-nohug .app-card-footer { margin-top: 0 !important; padding-top: 0 !important; margin-left: auto !important; }
+    body.theme-nohug .author-badge { display: none !important; }
+    body.theme-nohug .status-pip { background: #333 !important; }
+    body.theme-nohug .status-pip-label { color: #444 !important; }
+    body.theme-nohug .container { color: #aaa; }
 
     /* ── Responsive ──────────────────────────────────────────── */
     @media (max-width: 640px) {
@@ -674,8 +692,8 @@
             <span class="ucf-text">Charge On</span>
         </div>
         <div class="hero-emblem nohug">
-            <span class="nohug-banner-text">Don't Fucking<br/>Hug Me</span>
-            <span class="nohug-banner-sub">-- Matt Setzer</span>
+            <span class="nohug-banner-text">don't fucking hug me</span>
+            <span class="nohug-banner-sub"></span>
         </div>
 
         <h1><span class="accent" id="hero-accent">//</span> <span id="hero-title">Dan's World of AI Magic</span></h1>
@@ -884,7 +902,7 @@ const THEMES = {
     default: { accent: '//', title: "Dan's World of AI Magic", subtitle: 'CTO Office -- Research, Prototypes & Development' },
     pokemon: { accent: '\u26A1', title: "Professor Kraft's Pokemon Lab", subtitle: "Gotta catch 'em all -- Security Analytics Edition" },
     ucf:     { accent: '//', title: "Dan's World of AI Magic", subtitle: 'CHARGE ON \u2022 CTO OFFICE \u2022 GO KNIGHTS' },
-    nohug:   { accent: '//', title: "Dan's World of AI Magic", subtitle: "No hugs. Just tools." }
+    nohug:   { accent: '$', title: "dans-world", subtitle: '' }
 };
 
 const POKE_TYPES = [
