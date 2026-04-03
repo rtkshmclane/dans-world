@@ -1,13 +1,16 @@
 {% extends "base.html" %}
 {% set active_page = "home" %}
-{% set default_theme = 'pokemon' if (user and user.sub == 'ckraft') else 'ucf' if (user and user.sub == 'dschiappa') else 'default' %}
-{% set is_admin = user and user.sub == 'shmclane' %}
+{% set default_theme = 'pokemon' if (user and user.sub == 'ckraft') else 'ucf' if (user and user.sub == 'dschiappa') else 'nohug' if (user and user.sub == 'msetzer') else 'default' %}
+{% set show_switcher = user and user.sub in ['shmclane'] %}
+{% set show_toggle = user and user.sub in ['ckraft', 'dschiappa', 'msetzer'] %}
 
 {% block title %}Dan's World of AI Magic{% endblock %}
 
 {% block extra_css %}
 <style>
-    /* ── Hero ─────────────────────────────────────────────────── */
+    /* ================================================================
+       DEFAULT THEME
+       ================================================================ */
     .hero {
         background: linear-gradient(135deg, #0f172a 0%, #1B2A4A 40%, #1e3a5f 100%);
         margin: -24px -24px 32px -24px;
@@ -15,21 +18,17 @@
         position: relative;
         overflow: hidden;
     }
-
     .hero::before {
         content: "";
-        position: absolute;
-        inset: 0;
+        position: absolute; inset: 0;
         background:
             radial-gradient(circle at 20% 50%, rgba(243,112,33,0.08) 0%, transparent 50%),
             radial-gradient(circle at 80% 20%, rgba(59,130,246,0.06) 0%, transparent 40%);
         pointer-events: none;
     }
-
     .hero::after {
         content: "";
-        position: absolute;
-        inset: 0;
+        position: absolute; inset: 0;
         background-image:
             linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
             linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
@@ -37,152 +36,53 @@
         animation: gridPulse 8s ease-in-out infinite;
         pointer-events: none;
     }
+    @keyframes gridPulse { 0%,100%{opacity:.4} 50%{opacity:1} }
 
-    @keyframes gridPulse {
-        0%, 100% { opacity: 0.4; }
-        50% { opacity: 1; }
-    }
-
-    .hero-inner {
-        position: relative;
-        z-index: 1;
-        max-width: 1200px;
-        margin: 0 auto;
-    }
-
-    .hero h1 {
-        font-size: 36px;
-        font-weight: 700;
-        color: #ffffff;
-        letter-spacing: -0.02em;
-    }
-
-    .hero h1 .accent {
-        color: #F37021;
-        font-weight: 400;
-    }
-
-    .hero-subtitle {
-        color: rgba(255,255,255,0.55);
-        font-size: 15px;
-        margin-top: 8px;
-        font-weight: 400;
-    }
-
-    .hero-stats {
-        display: flex;
-        gap: 32px;
-        margin-top: 28px;
-    }
-
-    .hero-stat {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-    }
-
-    .hero-stat-value {
-        font-size: 28px;
-        font-weight: 700;
-        color: #ffffff;
-        line-height: 1;
-    }
-
-    .hero-stat-label {
-        font-size: 12px;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        color: rgba(255,255,255,0.4);
-        font-weight: 500;
-    }
-
+    .hero-inner { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; }
+    .hero h1 { font-size: 36px; font-weight: 700; color: #fff; letter-spacing: -0.02em; }
+    .hero h1 .accent { color: #F37021; font-weight: 400; }
+    .hero-subtitle { color: rgba(255,255,255,0.55); font-size: 15px; margin-top: 8px; }
+    .hero-stats { display: flex; gap: 32px; margin-top: 28px; }
+    .hero-stat { display: flex; flex-direction: column; gap: 2px; }
+    .hero-stat-value { font-size: 28px; font-weight: 700; color: #fff; line-height: 1; }
+    .hero-stat-label { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: rgba(255,255,255,0.4); font-weight: 500; }
     .hero-stat-value .pulse-dot {
-        display: inline-block;
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: #22c55e;
-        margin-left: 6px;
-        vertical-align: middle;
+        display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+        background: #22c55e; margin-left: 6px; vertical-align: middle;
         animation: pulse 2s ease-in-out infinite;
     }
+    @keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,.5)} 50%{box-shadow:0 0 0 6px rgba(34,197,94,0)} }
 
-    @keyframes pulse {
-        0%, 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.5); }
-        50% { box-shadow: 0 0 0 6px rgba(34,197,94,0); }
-    }
+    .hero-emblem { position: absolute; top: 20px; right: 32px; z-index: 2; display: none; }
 
-    .hero-emblem {
-        position: absolute;
-        top: 20px;
-        right: 32px;
-        z-index: 2;
-        display: none;
-    }
-
-    /* ── Section headers ─────────────────────────────────────── */
+    /* Section headers */
     .section-label {
-        font-size: 11px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        color: var(--aw-gray-600);
-        margin-top: 36px;
-        margin-bottom: 12px;
-        padding-left: 12px;
+        font-size: 11px; font-weight: 700; text-transform: uppercase;
+        letter-spacing: .08em; color: var(--aw-gray-600);
+        margin-top: 36px; margin-bottom: 12px; padding-left: 12px;
         border-left: 3px solid var(--aw-orange);
-        display: flex;
-        align-items: center;
-        gap: 8px;
+        display: flex; align-items: center; gap: 8px;
     }
-
     .section-count {
-        background: var(--aw-gray-200);
-        color: var(--aw-gray-600);
-        font-size: 11px;
-        font-weight: 700;
-        padding: 1px 7px;
-        border-radius: 10px;
+        background: var(--aw-gray-200); color: var(--aw-gray-600);
+        font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 10px;
     }
 
-    /* ── App grid ────────────────────────────────────────────── */
-    .app-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 16px;
-    }
+    /* App grid */
+    .app-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
 
     .app-card {
-        background: white;
-        border: 1px solid var(--aw-gray-200);
-        border-radius: 12px;
-        padding: 24px;
-        text-decoration: none;
-        color: inherit;
-        transition: all 0.2s ease;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        position: relative;
-        overflow: hidden;
+        background: white; border: 1px solid var(--aw-gray-200); border-radius: 12px;
+        padding: 24px; text-decoration: none; color: inherit;
+        transition: all 0.2s ease; display: flex; flex-direction: column;
+        gap: 10px; position: relative; overflow: hidden;
     }
-
     .app-card::before {
-        content: "";
-        position: absolute;
-        top: 0; left: 0; right: 0;
-        height: 3px;
+        content: ""; position: absolute; top: 0; left: 0; right: 0; height: 3px;
         background: linear-gradient(90deg, var(--card-accent, #F37021), transparent);
-        opacity: 0;
-        transition: opacity 0.2s ease;
+        opacity: 0; transition: opacity 0.2s ease;
     }
-
-    .app-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 12px 32px rgba(27, 42, 74, 0.12);
-        border-color: var(--card-accent, var(--aw-orange));
-    }
-
+    .app-card:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(27,42,74,.12); border-color: var(--card-accent, var(--aw-orange)); }
     .app-card:hover::before { opacity: 1; }
 
     .app-card.accent-ticket { --card-accent: #7c3aed; }
@@ -197,13 +97,11 @@
     .app-card.accent-compliance { --card-accent: #9333ea; }
 
     .app-card-header { display: flex; align-items: center; gap: 12px; }
-
     .app-card-icon {
         width: 44px; height: 44px; border-radius: 10px;
         display: flex; align-items: center; justify-content: center;
         font-size: 20px; flex-shrink: 0;
     }
-
     .app-card-icon.ticket { background: linear-gradient(135deg, #ede9fe, #ddd6fe); color: #7c3aed; }
     .app-card-icon.shield { background: linear-gradient(135deg, #fce7f3, #fbcfe8); color: #db2777; }
     .app-card-icon.chart { background: linear-gradient(135deg, #d1fae5, #a7f3d0); color: #059669; }
@@ -214,141 +112,537 @@
     .app-card-icon.churn { background: linear-gradient(135deg, #fef2f2, #fecaca); color: #dc2626; }
     .app-card-icon.demo { background: linear-gradient(135deg, #ffedd5, #fed7aa); color: #ea580c; }
     .app-card-icon.compliance { background: linear-gradient(135deg, #f3e8ff, #e9d5ff); color: #9333ea; }
-
     .icon-svg { width: 22px; height: 22px; }
 
     .app-card-title { font-size: 16px; font-weight: 600; color: var(--aw-navy); }
     .app-card p { font-size: 13px; color: var(--aw-gray-600); line-height: 1.5; }
+    .app-card-footer { display: flex; align-items: center; gap: 8px; margin-top: auto; padding-top: 8px; }
 
-    .app-card-footer {
-        display: flex; align-items: center; gap: 8px;
-        margin-top: auto; padding-top: 8px;
-    }
-
-    .author-badge {
-        font-size: 11px; font-weight: 600; padding: 2px 8px;
-        border-radius: 10px; letter-spacing: 0.02em;
-    }
-
+    .author-badge { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 10px; letter-spacing: .02em; }
     .author-badge.sam { background: #dbeafe; color: #1e40af; }
     .author-badge.brad, .author-badge.yeti { background: #d1fae5; color: #065f46; }
     .author-badge.doug { background: #fef3c7; color: #92400e; }
     .author-badge.andrew { background: #ede9fe; color: #5b21b6; }
 
-    .status-pip {
-        width: 6px; height: 6px; border-radius: 50%;
-        background: #22c55e; margin-left: auto; flex-shrink: 0;
-    }
+    .status-pip { width: 6px; height: 6px; border-radius: 50%; background: #22c55e; margin-left: auto; flex-shrink: 0; }
     .status-pip.demo { background: #f59e0b; }
     .status-pip-label { font-size: 11px; color: var(--aw-gray-600); margin-left: -4px; }
 
-    /* ── Theme Switcher (shmclane only) ──────────────────────── */
+    /* Pokemon & UCF & NoHug elements hidden by default */
+    .poke-overlay, .ucf-overlay, .nohug-banner { display: none; }
+
+    /* Theme switcher (shmclane full, others toggle) */
     .theme-switcher {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        z-index: 999;
-        display: flex;
-        gap: 6px;
-        background: rgba(27,42,74,0.95);
-        padding: 8px 12px;
-        border-radius: 10px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-        backdrop-filter: blur(8px);
+        position: fixed; bottom: 20px; right: 20px; z-index: 999;
+        display: flex; gap: 6px;
+        background: rgba(27,42,74,0.95); padding: 8px 12px; border-radius: 10px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3); backdrop-filter: blur(8px);
     }
-
     .theme-btn {
-        padding: 5px 12px;
-        border: 1px solid rgba(255,255,255,0.15);
-        border-radius: 6px;
-        background: transparent;
-        color: rgba(255,255,255,0.7);
-        font-size: 12px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.15s;
+        padding: 5px 12px; border: 1px solid rgba(255,255,255,.15); border-radius: 6px;
+        background: transparent; color: rgba(255,255,255,.7); font-size: 12px;
+        font-weight: 600; cursor: pointer; transition: all .15s;
     }
-
-    .theme-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+    .theme-btn:hover { background: rgba(255,255,255,.1); color: #fff; }
     .theme-btn.active { background: var(--aw-orange); color: #fff; border-color: var(--aw-orange); }
 
-    /* ── Pokemon Theme ───────────────────────────────────────── */
+    /* ================================================================
+       POKEMON THEME -- ACTUAL TCG CARD STYLE
+       ================================================================ */
+
     body.theme-pokemon .hero {
-        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 30%, #0f3460 60%, #e94560 100%) !important;
+        background: linear-gradient(135deg, #0c0c1d 0%, #1a1040 25%, #2d1b69 50%, #cc0000 85%, #ff1a1a 100%) !important;
     }
     body.theme-pokemon .hero::before {
         background:
-            radial-gradient(circle at 15% 80%, rgba(255,203,5,0.15) 0%, transparent 40%),
-            radial-gradient(circle at 85% 30%, rgba(233,69,96,0.12) 0%, transparent 40%) !important;
+            radial-gradient(circle at 10% 90%, rgba(255,203,5,0.2) 0%, transparent 30%),
+            radial-gradient(circle at 90% 10%, rgba(204,0,0,0.15) 0%, transparent 30%) !important;
     }
     body.theme-pokemon .hero::after {
-        background-image:
-            radial-gradient(circle 2px, rgba(255,203,5,0.3) 100%, transparent 100%),
-            radial-gradient(circle 1px, rgba(255,255,255,0.15) 100%, transparent 100%) !important;
-        background-size: 80px 80px, 40px 40px !important;
-        animation: starfield 4s linear infinite !important;
+        background-image: none !important;
+        background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120' opacity='0.04'%3E%3Ccircle cx='60' cy='60' r='50' fill='none' stroke='white' stroke-width='3'/%3E%3Cline x1='10' y1='60' x2='110' y2='60' stroke='white' stroke-width='3'/%3E%3Ccircle cx='60' cy='60' r='15' fill='none' stroke='white' stroke-width='3'/%3E%3C/svg%3E") repeat !important;
+        background-size: 120px 120px !important;
+        animation: pokeBgScroll 20s linear infinite !important;
     }
-    @keyframes starfield {
-        0% { transform: translateY(0); }
-        100% { transform: translateY(-80px); }
-    }
+    @keyframes pokeBgScroll { 0%{transform:translate(0,0)} 100%{transform:translate(120px,120px)} }
+
     body.theme-pokemon .hero h1 .accent { color: #FFCB05 !important; }
-    body.theme-pokemon .hero-stat-value .pulse-dot { background: #FFCB05 !important; }
-    body.theme-pokemon .section-label { border-left-color: #e94560 !important; }
-    body.theme-pokemon .section-count { background: #fce4ec !important; color: #e94560 !important; }
-    body.theme-pokemon .app-card:hover { border-color: #FFCB05 !important; }
-    body.theme-pokemon .app-card::before { background: linear-gradient(90deg, #FFCB05, #e94560, transparent) !important; }
+    body.theme-pokemon .hero h1 { text-shadow: 2px 2px 0 #cc0000, 4px 4px 0 rgba(0,0,0,0.3) !important; }
+    body.theme-pokemon .hero-subtitle { color: rgba(255,203,5,0.7) !important; font-style: italic !important; }
+    body.theme-pokemon .hero-stat-value { text-shadow: 1px 1px 0 rgba(204,0,0,0.5) !important; }
+    body.theme-pokemon .hero-stat-value .pulse-dot { background: #FFCB05 !important; box-shadow: 0 0 10px #FFCB05 !important; }
+    body.theme-pokemon .hero-stat-label { color: rgba(255,203,5,0.5) !important; }
     body.theme-pokemon .hero-emblem.pokemon { display: block; }
-    body.theme-pokemon .app-card {
-        cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='11' fill='%23fff' stroke='%23333' stroke-width='2'/%3E%3Cpath d='M1 12h22' stroke='%23333' stroke-width='2'/%3E%3Ccircle cx='12' cy='12' r='4' fill='%23fff' stroke='%23333' stroke-width='2'/%3E%3Ccircle cx='12' cy='12' r='2' fill='%23333'/%3E%3Crect x='1' y='1' width='22' height='11' rx='11' fill='%23e94560' opacity='0.9'/%3E%3C/svg%3E") 12 12, pointer;
-    }
 
     .hero-emblem.pokemon svg {
-        width: 64px; height: 64px;
-        animation: pokeSpin 10s linear infinite;
-        opacity: 0.9;
+        width: 80px; height: 80px; opacity: 0.9;
+        filter: drop-shadow(0 0 15px rgba(255,203,5,0.4));
+        animation: pokeSpin 8s linear infinite, pokeFloat 3s ease-in-out infinite;
     }
-    @keyframes pokeSpin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
+    @keyframes pokeSpin { 0%{transform:rotate(0)} 100%{transform:rotate(360deg)} }
+    @keyframes pokeFloat { 0%,100%{margin-top:0} 50%{margin-top:-10px} }
+
+    body.theme-pokemon .hero-inner::before,
+    body.theme-pokemon .hero-inner::after {
+        content: ""; position: absolute; width: 4px; height: 4px; border-radius: 50%;
+        background: #FFCB05; box-shadow: 0 0 6px #FFCB05;
+        animation: sparkle 3s ease-in-out infinite; pointer-events: none;
+    }
+    body.theme-pokemon .hero-inner::before { top: 20%; left: 30%; animation-delay: 0s; }
+    body.theme-pokemon .hero-inner::after { top: 60%; left: 70%; animation-delay: 1.5s; }
+    @keyframes sparkle { 0%,100%{opacity:0;transform:scale(0)} 50%{opacity:1;transform:scale(1.5)} }
+
+    body.theme-pokemon .section-label {
+        border-left-color: #cc0000 !important;
+        color: #cc0000 !important;
+        font-family: 'Trebuchet MS', sans-serif !important;
+        font-size: 13px !important;
+        letter-spacing: 0.12em !important;
+    }
+    body.theme-pokemon .section-count { background: #cc0000 !important; color: #fff !important; }
+
+    /* ── Pokemon TCG Card ── */
+    body.theme-pokemon .app-grid {
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)) !important;
+        gap: 24px !important;
     }
 
-    /* ── UCF Knights Theme ───────────────────────────────────── */
+    body.theme-pokemon .app-card {
+        border-radius: 14px !important;
+        border: none !important;
+        padding: 0 !important;
+        background: none !important;
+        box-shadow: none !important;
+        overflow: visible !important;
+        gap: 0 !important;
+    }
+    body.theme-pokemon .app-card::before { display: none !important; }
+
+    body.theme-pokemon .app-card .poke-overlay {
+        display: flex !important;
+        flex-direction: column;
+        border-radius: 14px;
+        overflow: hidden;
+        /* Outer yellow border like real Pokemon cards */
+        border: 8px solid #FFCB05;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.15), inset 0 0 0 2px #DAA520;
+        background: #FFCB05;
+        transition: all 0.3s ease;
+    }
+    body.theme-pokemon .app-card:hover .poke-overlay {
+        transform: translateY(-6px) rotate(-1deg);
+        box-shadow: 0 20px 50px rgba(204,0,0,0.2), 0 0 0 3px #FFCB05, 0 0 30px rgba(255,203,5,0.15);
+    }
+
+    /* Card inner content area */
+    .poke-card-inner {
+        display: flex; flex-direction: column;
+        background: linear-gradient(180deg, #f8f6e8 0%, #e8e4d0 100%);
+        margin: 4px; border-radius: 6px;
+        padding: 10px 12px;
+    }
+
+    /* Top row: name + HP */
+    .poke-card-top {
+        display: flex; justify-content: space-between; align-items: center;
+        margin-bottom: 6px;
+    }
+    .poke-card-name {
+        font-size: 15px; font-weight: 800; color: #1a1a1a;
+        font-family: 'Trebuchet MS', Arial, sans-serif;
+        letter-spacing: -0.02em;
+    }
+    .poke-card-hp {
+        font-size: 20px; font-weight: 900; color: #cc0000;
+        font-family: 'Trebuchet MS', Arial, sans-serif;
+    }
+    .poke-card-hp span { font-size: 11px; font-weight: 600; color: #cc0000; vertical-align: super; margin-right: 2px; }
+
+    /* Image area with type-colored frame */
+    .poke-card-image {
+        border: 3px solid #888;
+        border-radius: 4px;
+        height: 100px;
+        margin-bottom: 8px;
+        display: flex; align-items: center; justify-content: center;
+        position: relative;
+        overflow: hidden;
+    }
+    .poke-card-image .poke-img-icon {
+        width: 52px; height: 52px; border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 24px; z-index: 1;
+    }
+    .poke-card-image .poke-img-bg {
+        position: absolute; inset: 0; opacity: 0.15;
+        background: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.3) 10px, rgba(255,255,255,0.3) 20px);
+    }
+
+    /* Encounter text on hover */
+    .poke-card-image .poke-encounter {
+        position: absolute; inset: 0;
+        background: linear-gradient(135deg, rgba(204,0,0,0.92), rgba(26,16,64,0.95));
+        color: #FFCB05; display: flex; align-items: center; justify-content: center;
+        font-size: 13px; font-weight: 800; font-style: italic;
+        font-family: 'Trebuchet MS', sans-serif;
+        text-shadow: 1px 1px 0 rgba(0,0,0,0.4);
+        opacity: 0; transition: opacity 0.25s ease;
+    }
+    body.theme-pokemon .app-card:hover .poke-encounter { opacity: 1; }
+
+    /* Type badge row */
+    .poke-card-type-row {
+        display: flex; align-items: center; gap: 6px; margin-bottom: 6px;
+    }
+    .poke-type-pill {
+        font-size: 9px; font-weight: 700; padding: 2px 8px; border-radius: 3px;
+        text-transform: uppercase; letter-spacing: 0.08em; color: #fff;
+    }
+    .poke-type-pill.fire { background: #F08030; }
+    .poke-type-pill.water { background: #6890F0; }
+    .poke-type-pill.electric { background: #F8D030; color: #333; }
+    .poke-type-pill.grass { background: #78C850; }
+    .poke-type-pill.psychic { background: #F85888; }
+    .poke-type-pill.dragon { background: #7038F8; }
+    .poke-type-pill.steel { background: #B8B8D0; color: #333; }
+    .poke-type-pill.dark { background: #705848; }
+    .poke-type-pill.ice { background: #98D8D8; color: #333; }
+    .poke-type-pill.ghost { background: #705898; }
+    .poke-type-pill.normal { background: #A8A878; }
+    .poke-type-pill.flying { background: #A890F0; }
+    .poke-type-pill.fighting { background: #C03028; }
+    .poke-evolution { font-size: 9px; color: #888; font-style: italic; margin-left: auto; }
+
+    /* Description as "flavor text" */
+    .poke-card-desc {
+        font-size: 11px; color: #444; font-style: italic;
+        border-top: 1px solid #ccc; padding-top: 6px; margin-bottom: 6px;
+        line-height: 1.4; min-height: 30px;
+    }
+
+    /* Attack section */
+    .poke-card-attacks { display: flex; flex-direction: column; gap: 4px; margin-bottom: 6px; }
+    .poke-attack {
+        display: flex; align-items: center; gap: 6px;
+        padding: 3px 6px; border-radius: 3px; background: rgba(0,0,0,0.03);
+    }
+    .poke-attack-energy {
+        display: flex; gap: 2px;
+    }
+    .poke-energy-dot {
+        width: 12px; height: 12px; border-radius: 50%;
+        border: 1px solid rgba(0,0,0,0.2);
+    }
+    .poke-attack-name { font-size: 11px; font-weight: 700; color: #1a1a1a; flex: 1; }
+    .poke-attack-dmg { font-size: 14px; font-weight: 900; color: #1a1a1a; font-family: 'Trebuchet MS', sans-serif; }
+
+    /* Bottom bar: weakness, resistance, retreat */
+    .poke-card-bottom {
+        display: flex; justify-content: space-between;
+        font-size: 9px; color: #666;
+        border-top: 1px solid #ccc; padding-top: 4px;
+    }
+    .poke-card-bottom div { display: flex; flex-direction: column; align-items: center; gap: 1px; }
+    .poke-card-bottom .label { font-weight: 700; text-transform: uppercase; font-size: 8px; color: #999; }
+    .poke-card-bottom .val { font-weight: 800; font-size: 11px; color: #333; }
+
+    /* Rarity symbol in corner */
+    .poke-card-rarity {
+        position: absolute; bottom: 4px; right: 8px;
+        font-size: 10px; color: #BA9B37;
+    }
+
+    /* Hide default card innards when pokemon is active */
+    body.theme-pokemon .app-card-header,
+    body.theme-pokemon .app-card > p,
+    body.theme-pokemon .app-card-footer { display: none !important; }
+    body.theme-pokemon .status-pip, body.theme-pokemon .status-pip-label { display: none !important; }
+    body.theme-pokemon { background: #f0f0e8 !important; }
+
+    /* Holographic shimmer on hover */
+    body.theme-pokemon .app-card:hover .poke-overlay::after {
+        content: "";
+        position: absolute; inset: 0; border-radius: 14px;
+        background: linear-gradient(135deg, transparent 20%, rgba(255,255,255,0.1) 40%, rgba(255,203,5,0.05) 50%, transparent 60%);
+        animation: holoShimmer 1.5s ease-in-out infinite;
+        pointer-events: none;
+    }
+    @keyframes holoShimmer {
+        0% { background-position: -200% 0; }
+        100% { background-position: 200% 0; }
+    }
+
+    /* ================================================================
+       UCF KNIGHTS THEME -- FOOTBALL PLAYER CARD
+       ================================================================ */
+
     body.theme-ucf .hero {
-        background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 30%, #1a1a1a 60%, #BA9B37 100%) !important;
+        background: linear-gradient(135deg, #000000 0%, #111111 20%, #1a1a1a 50%, #BA9B37 100%) !important;
     }
     body.theme-ucf .hero::before {
         background:
-            radial-gradient(circle at 20% 50%, rgba(186,155,55,0.15) 0%, transparent 50%),
-            radial-gradient(circle at 80% 30%, rgba(186,155,55,0.1) 0%, transparent 40%) !important;
+            radial-gradient(circle at 25% 50%, rgba(186,155,55,0.2) 0%, transparent 40%),
+            radial-gradient(circle at 75% 30%, rgba(186,155,55,0.15) 0%, transparent 35%) !important;
+    }
+    body.theme-ucf .hero::after {
+        background-image: none !important;
+        background:
+            radial-gradient(ellipse at 20% -20%, rgba(186,155,55,0.08) 0%, transparent 50%),
+            radial-gradient(ellipse at 80% -20%, rgba(186,155,55,0.08) 0%, transparent 50%) !important;
+        animation: stadiumLights 4s ease-in-out infinite !important;
+    }
+    @keyframes stadiumLights { 0%,100%{opacity:0.6} 50%{opacity:1} }
+
+    body.theme-ucf .hero h1 {
+        font-family: 'Georgia', 'Times New Roman', serif !important;
+        text-shadow: 2px 2px 0 #BA9B37, 0 0 20px rgba(186,155,55,0.3) !important;
+        font-size: 40px !important;
     }
     body.theme-ucf .hero h1 .accent { color: #BA9B37 !important; }
-    body.theme-ucf .hero-stat-value .pulse-dot { background: #BA9B37 !important; }
-    body.theme-ucf .section-label { border-left-color: #BA9B37 !important; }
-    body.theme-ucf .section-count { background: #f5f0e0 !important; color: #8a7428 !important; }
-    body.theme-ucf .app-card:hover { border-color: #BA9B37 !important; }
-    body.theme-ucf .app-card::before { background: linear-gradient(90deg, #BA9B37, transparent) !important; }
+    body.theme-ucf .hero-subtitle {
+        color: #BA9B37 !important; font-weight: 600 !important;
+        letter-spacing: 0.15em !important; text-transform: uppercase !important; font-size: 13px !important;
+    }
+    body.theme-ucf .hero-stat-value { color: #BA9B37 !important; text-shadow: 0 0 10px rgba(186,155,55,0.3) !important; }
+    body.theme-ucf .hero-stat-value .pulse-dot { background: #BA9B37 !important; box-shadow: 0 0 10px #BA9B37 !important; }
+    body.theme-ucf .hero-stat-label { color: rgba(186,155,55,0.5) !important; }
     body.theme-ucf .hero-emblem.ucf { display: block; }
 
-    .hero-emblem.ucf span {
-        font-size: 56px;
-        opacity: 0.85;
-        animation: knightBounce 3s ease-in-out infinite;
-        display: inline-block;
+    .hero-emblem.ucf { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .hero-emblem.ucf .ucf-shield { width: 72px; height: 72px; animation: knightFloat 3s ease-in-out infinite; filter: drop-shadow(0 0 20px rgba(186,155,55,0.5)); }
+    @keyframes knightFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+    .hero-emblem.ucf .ucf-text { font-family: 'Georgia', serif; font-size: 11px; font-weight: 700; color: #BA9B37; letter-spacing: 0.3em; text-transform: uppercase; text-shadow: 0 0 10px rgba(186,155,55,0.4); }
+
+    body.theme-ucf .hero-inner::after {
+        content: ""; position: absolute; bottom: -12px; left: 0; right: 0; height: 3px;
+        background: linear-gradient(90deg, transparent, #BA9B37, transparent);
     }
-    @keyframes knightBounce {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-8px); }
+
+    body.theme-ucf .section-label {
+        border-left: 4px solid #BA9B37 !important; color: #000 !important;
+        font-family: 'Georgia', serif !important; font-size: 13px !important;
     }
+    body.theme-ucf .section-count { background: #000 !important; color: #BA9B37 !important; }
+
+    /* ── UCF Football Card ── */
+    body.theme-ucf .app-grid {
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)) !important;
+        gap: 24px !important;
+    }
+
+    body.theme-ucf .app-card {
+        border-radius: 14px !important;
+        border: none !important;
+        padding: 0 !important;
+        background: none !important;
+        box-shadow: none !important;
+        overflow: visible !important;
+        gap: 0 !important;
+    }
+    body.theme-ucf .app-card::before { display: none !important; }
+
+    body.theme-ucf .app-card .ucf-overlay {
+        display: flex !important;
+        flex-direction: column;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 3px solid #BA9B37;
+        background: #000;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.3), inset 0 0 0 1px rgba(186,155,55,0.3);
+        transition: all 0.3s ease;
+    }
+    body.theme-ucf .app-card:hover .ucf-overlay {
+        transform: translateY(-6px);
+        box-shadow: 0 20px 50px rgba(186,155,55,0.2), 0 0 0 3px #BA9B37, 0 0 40px rgba(186,155,55,0.1);
+    }
+
+    /* Player card header - jersey number + name */
+    .ucf-card-header {
+        background: linear-gradient(135deg, #000 0%, #1a1a1a 100%);
+        padding: 10px 14px 8px;
+        display: flex; align-items: center; gap: 10px;
+        border-bottom: 3px solid #BA9B37;
+    }
+    .ucf-card-number {
+        font-family: 'Georgia', serif; font-size: 32px; font-weight: 900;
+        color: #BA9B37; line-height: 1;
+        text-shadow: 2px 2px 0 rgba(186,155,55,0.2);
+        min-width: 40px; text-align: center;
+    }
+    .ucf-card-name-block { flex: 1; }
+    .ucf-card-name {
+        font-family: 'Georgia', serif; font-size: 14px; font-weight: 700;
+        color: #fff; letter-spacing: 0.02em;
+    }
+    .ucf-card-position {
+        font-size: 10px; color: #BA9B37; text-transform: uppercase;
+        letter-spacing: 0.1em; font-weight: 600;
+    }
+    .ucf-card-logo {
+        width: 28px; height: 28px;
+    }
+
+    /* "Field" area with icon */
+    .ucf-card-field {
+        height: 90px;
+        background: linear-gradient(180deg, #1a3a1a 0%, #0d260d 100%);
+        display: flex; align-items: center; justify-content: center;
+        position: relative; overflow: hidden;
+    }
+    .ucf-card-field::before {
+        content: ""; position: absolute; inset: 0;
+        /* Yard lines */
+        background: repeating-linear-gradient(
+            90deg,
+            transparent 0px, transparent 48px,
+            rgba(255,255,255,0.08) 48px, rgba(255,255,255,0.08) 50px
+        );
+    }
+    .ucf-card-field::after {
+        content: ""; position: absolute; top: 50%; left: 0; right: 0; height: 2px;
+        background: rgba(255,255,255,0.1);
+    }
+    .ucf-card-field .ucf-field-icon {
+        width: 52px; height: 52px; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        background: rgba(186,155,55,0.15); border: 2px solid #BA9B37;
+        z-index: 1;
+    }
+    .ucf-card-field .ucf-field-icon svg { color: #BA9B37; }
+
+    /* Stats grid */
+    .ucf-card-stats {
+        display: grid; grid-template-columns: repeat(3, 1fr);
+        background: #111; border-top: 1px solid #333;
+    }
+    .ucf-card-stat {
+        padding: 8px 6px; text-align: center;
+        border-right: 1px solid #333;
+    }
+    .ucf-card-stat:last-child { border-right: none; }
+    .ucf-card-stat .stat-val {
+        font-family: 'Georgia', serif; font-size: 18px; font-weight: 900;
+        color: #BA9B37;
+    }
+    .ucf-card-stat .stat-label {
+        font-size: 8px; text-transform: uppercase; letter-spacing: 0.1em;
+        color: #666; font-weight: 600;
+    }
+
+    /* Description bar */
+    .ucf-card-desc {
+        padding: 8px 14px; font-size: 11px; color: #999;
+        background: #0a0a0a; line-height: 1.4;
+        border-top: 1px solid #222;
+        font-family: 'Georgia', serif; font-style: italic;
+    }
+
+    /* Footer with conference badge */
+    .ucf-card-footer {
+        padding: 6px 14px; display: flex; justify-content: space-between; align-items: center;
+        background: #000; border-top: 2px solid #BA9B37;
+    }
+    .ucf-conf-badge {
+        font-size: 8px; text-transform: uppercase; letter-spacing: 0.15em;
+        color: #BA9B37; font-weight: 700; font-family: 'Georgia', serif;
+    }
+    .ucf-card-year { font-size: 9px; color: #555; font-family: 'Georgia', serif; }
+
+    /* UCF hover overlay */
+    .ucf-card-field .ucf-hover-text {
+        position: absolute; inset: 0;
+        background: rgba(0,0,0,0.85);
+        display: flex; align-items: center; justify-content: center;
+        color: #BA9B37; font-family: 'Georgia', serif; font-size: 14px;
+        font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+        opacity: 0; transition: opacity 0.25s ease;
+    }
+    body.theme-ucf .app-card:hover .ucf-hover-text { opacity: 1; }
+
+    body.theme-ucf .app-card-header,
+    body.theme-ucf .app-card > p,
+    body.theme-ucf .app-card-footer { display: none !important; }
+    body.theme-ucf .status-pip, body.theme-ucf .status-pip-label { display: none !important; }
+    body.theme-ucf { background: #f5f3ea !important; }
+
+    /* ================================================================
+       DON'T FUCKING HUG ME THEME -- Matt Setzer
+       ================================================================ */
+
+    body.theme-nohug .hero {
+        background: #111 !important;
+        padding: 32px 32px 28px !important;
+    }
+    body.theme-nohug .hero::before,
+    body.theme-nohug .hero::after { display: none !important; }
+
+    body.theme-nohug .hero h1 { font-size: 28px !important; color: #fff !important; font-weight: 400 !important; }
+    body.theme-nohug .hero h1 .accent { color: #ff4444 !important; }
+    body.theme-nohug .hero-subtitle { color: #666 !important; }
+    body.theme-nohug .hero-stat-value { color: #fff !important; font-size: 24px !important; }
+    body.theme-nohug .hero-stat-value .pulse-dot { background: #ff4444 !important; }
+    body.theme-nohug .hero-stat-label { color: #555 !important; }
+    body.theme-nohug .hero-emblem.nohug { display: block; }
+
+    .hero-emblem.nohug {
+        display: flex; flex-direction: column; align-items: flex-end; gap: 0;
+    }
+    .nohug-banner-text {
+        font-family: 'Impact', 'Arial Black', sans-serif;
+        font-size: 16px; color: #ff4444; letter-spacing: 0.15em;
+        text-transform: uppercase; line-height: 1.1;
+    }
+    .nohug-banner-sub {
+        font-size: 10px; color: #555; letter-spacing: 0.1em; text-transform: uppercase;
+    }
+
+    body.theme-nohug .section-label {
+        border-left-color: #ff4444 !important;
+        color: #888 !important;
+        font-size: 11px !important;
+        letter-spacing: 0.15em !important;
+    }
+    body.theme-nohug .section-count { background: #222 !important; color: #ff4444 !important; }
+
+    body.theme-nohug .app-card {
+        background: #1a1a1a !important;
+        border: 1px solid #333 !important;
+        border-radius: 4px !important;
+    }
+    body.theme-nohug .app-card::before {
+        background: #ff4444 !important; height: 2px !important; opacity: 0 !important;
+    }
+    body.theme-nohug .app-card:hover {
+        border-color: #ff4444 !important;
+        box-shadow: none !important;
+        transform: none !important;
+    }
+    body.theme-nohug .app-card:hover::before { opacity: 1 !important; }
+    body.theme-nohug .app-card-title { color: #eee !important; }
+    body.theme-nohug .app-card p { color: #888 !important; }
+    body.theme-nohug .app-card-icon {
+        background: #222 !important; border-radius: 4px !important;
+        border: 1px solid #444 !important;
+    }
+    body.theme-nohug .app-card-icon svg { color: #ff4444 !important; }
+    body.theme-nohug .author-badge { background: #222 !important; color: #888 !important; }
+    body.theme-nohug .status-pip { background: #ff4444 !important; }
+    body.theme-nohug .status-pip-label { color: #555 !important; }
+
+    body.theme-nohug { background: #0d0d0d !important; }
+    body.theme-nohug .container { color: #ccc; }
 
     /* ── Responsive ──────────────────────────────────────────── */
     @media (max-width: 640px) {
         .hero { padding: 32px 20px; }
         .hero h1 { font-size: 26px; }
+        body.theme-ucf .hero h1 { font-size: 28px !important; }
         .hero-stats { gap: 20px; flex-wrap: wrap; }
         .hero-stat-value { font-size: 22px; }
         .app-grid { grid-template-columns: 1fr; }
         .theme-switcher { bottom: 10px; right: 10px; }
+        .hero-emblem { right: 16px; top: 12px; }
+        .hero-emblem.pokemon svg { width: 48px; height: 48px; }
     }
 </style>
 {% endblock %}
@@ -367,12 +661,21 @@
 
 <div class="hero">
     <div class="hero-inner">
-        <!-- Emblems (shown/hidden by theme class on body) -->
+        <!-- Emblems -->
         <div class="hero-emblem pokemon">
-            <svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="#fff" stroke="#333" stroke-width="4"/><path d="M2 50h96" stroke="#333" stroke-width="4"/><circle cx="50" cy="50" r="16" fill="#fff" stroke="#333" stroke-width="4"/><circle cx="50" cy="50" r="8" fill="#333"/><rect x="2" y="2" width="96" height="48" rx="48" fill="#e94560" opacity="0.9"/></svg>
+            <svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="#fff" stroke="#333" stroke-width="4"/><path d="M2 50h96" stroke="#333" stroke-width="4"/><circle cx="50" cy="50" r="16" fill="#fff" stroke="#333" stroke-width="4"/><circle cx="50" cy="50" r="8" fill="#333"/><rect x="2" y="2" width="96" height="48" rx="48" fill="#cc0000" opacity="0.95"/></svg>
         </div>
         <div class="hero-emblem ucf">
-            <span>&#9876;</span>
+            <svg class="ucf-shield" viewBox="0 0 100 120">
+                <path d="M50 5 L90 25 L90 65 Q90 100 50 115 Q10 100 10 65 L10 25 Z" fill="#000" stroke="#BA9B37" stroke-width="4"/>
+                <text x="50" y="58" text-anchor="middle" font-family="Georgia,serif" font-size="28" font-weight="bold" fill="#BA9B37">UCF</text>
+                <text x="50" y="80" text-anchor="middle" font-family="Georgia,serif" font-size="12" font-weight="bold" fill="#BA9B37" letter-spacing="3">KNIGHTS</text>
+            </svg>
+            <span class="ucf-text">Charge On</span>
+        </div>
+        <div class="hero-emblem nohug">
+            <span class="nohug-banner-text">Don't Fucking<br/>Hug Me</span>
+            <span class="nohug-banner-sub">-- Matt Setzer</span>
         </div>
 
         <h1><span class="accent" id="hero-accent">//</span> <span id="hero-title">Dan's World of AI Magic</span></h1>
@@ -381,19 +684,19 @@
         <div class="hero-stats">
             <div class="hero-stat">
                 <span class="hero-stat-value">{{ ns.analytics | length }}<span class="pulse-dot"></span></span>
-                <span class="hero-stat-label" data-default="Live Apps" data-pokemon="Legendary" data-ucf="Live Apps">Live Apps</span>
+                <span class="hero-stat-label" data-default="Live Apps" data-pokemon="Caught" data-ucf="Active" data-nohug="Apps">Live Apps</span>
             </div>
             <div class="hero-stat">
                 <span class="hero-stat-value">{{ ns.demos | length }}</span>
-                <span class="hero-stat-label" data-default="Demos" data-pokemon="Wild" data-ucf="Demos">Demos</span>
+                <span class="hero-stat-label" data-default="Demos" data-pokemon="In the Wild" data-ucf="Demos" data-nohug="Demos">Demos</span>
             </div>
             <div class="hero-stat">
                 <span class="hero-stat-value">{{ ns.engineering | length }}</span>
-                <span class="hero-stat-label" data-default="Engineering" data-pokemon="Rare" data-ucf="Engineering">Engineering</span>
+                <span class="hero-stat-label" data-default="Engineering" data-pokemon="Evolving" data-ucf="Engineering" data-nohug="Eng">Engineering</span>
             </div>
             <div class="hero-stat">
                 <span class="hero-stat-value" id="uptime-value">--</span>
-                <span class="hero-stat-label" data-default="Uptime" data-pokemon="Trainer XP" data-ucf="Uptime">Uptime</span>
+                <span class="hero-stat-label" data-default="Uptime" data-pokemon="Trainer Level" data-ucf="Game Time" data-nohug="Uptime">Uptime</span>
             </div>
         </div>
     </div>
@@ -423,8 +726,83 @@
     {% endif %}
 {% endmacro %}
 
-{% macro app_card(app, is_demo=false) %}
-<a href="{{ app.url }}" class="app-card accent-{{ app.icon or 'demo' }}">
+{% macro app_card(app, is_demo=false, idx=0) %}
+<a href="{{ app.url }}" class="app-card accent-{{ app.icon or 'demo' }}" data-app-name="{{ app.name }}" data-app-desc="{{ app.description }}" data-app-icon="{{ app.icon or 'demo' }}" data-app-author="{{ app.author or '' }}" data-idx="{{ idx }}">
+    <!-- Pokemon TCG Card Overlay -->
+    <div class="poke-overlay" style="position:relative;">
+        <div class="poke-card-inner">
+            <div class="poke-card-top">
+                <span class="poke-card-name">{{ app.name }}</span>
+                <span class="poke-card-hp"><span>HP</span><span class="poke-hp-val" data-idx="{{ idx }}">120</span></span>
+            </div>
+            <div class="poke-card-image" data-idx="{{ idx }}">
+                <div class="poke-img-bg"></div>
+                <div class="poke-img-icon {{ app.icon or 'demo' }}">
+                    {{ icon_svg(app.icon or 'demo') }}
+                </div>
+                <div class="poke-encounter">Wild {{ app.name }} appeared!</div>
+            </div>
+            <div class="poke-card-type-row">
+                <span class="poke-type-pill" data-idx="{{ idx }}">NORMAL</span>
+                <span class="poke-evolution" data-idx="{{ idx }}"></span>
+            </div>
+            <div class="poke-card-desc">{{ app.description }}</div>
+            <div class="poke-card-attacks">
+                <div class="poke-attack">
+                    <div class="poke-attack-energy"><div class="poke-energy-dot" data-idx="{{ idx }}" style="background:#A8A878;"></div></div>
+                    <span class="poke-attack-name" data-idx="{{ idx }}">Quick Attack</span>
+                    <span class="poke-attack-dmg" data-idx="{{ idx }}">20</span>
+                </div>
+                <div class="poke-attack">
+                    <div class="poke-attack-energy">
+                        <div class="poke-energy-dot" data-idx="{{ idx }}" style="background:#A8A878;"></div>
+                        <div class="poke-energy-dot" data-idx="{{ idx }}" style="background:#A8A878;"></div>
+                    </div>
+                    <span class="poke-attack-name poke-special" data-idx="{{ idx }}">Hyper Beam</span>
+                    <span class="poke-attack-dmg poke-special-dmg" data-idx="{{ idx }}">80</span>
+                </div>
+            </div>
+            <div class="poke-card-bottom">
+                <div><span class="label">Weakness</span><span class="val poke-weakness" data-idx="{{ idx }}">x2</span></div>
+                <div><span class="label">Resistance</span><span class="val poke-resist" data-idx="{{ idx }}">-30</span></div>
+                <div><span class="label">Retreat</span><span class="val poke-retreat" data-idx="{{ idx }}">1</span></div>
+            </div>
+        </div>
+        <span class="poke-card-rarity" data-idx="{{ idx }}"></span>
+    </div>
+
+    <!-- UCF Football Card Overlay -->
+    <div class="ucf-overlay">
+        <div class="ucf-card-header">
+            <span class="ucf-card-number" data-idx="{{ idx }}">#{{ idx + 1 }}</span>
+            <div class="ucf-card-name-block">
+                <div class="ucf-card-name">{{ app.name }}</div>
+                <div class="ucf-card-position" data-idx="{{ idx }}">Quarterback</div>
+            </div>
+            <svg class="ucf-card-logo" viewBox="0 0 40 48">
+                <path d="M20 2 L36 10 L36 26 Q36 40 20 46 Q4 40 4 26 L4 10 Z" fill="#000" stroke="#BA9B37" stroke-width="2"/>
+                <text x="20" y="24" text-anchor="middle" font-family="Georgia,serif" font-size="10" font-weight="bold" fill="#BA9B37">UCF</text>
+            </svg>
+        </div>
+        <div class="ucf-card-field">
+            <div class="ucf-field-icon {{ app.icon or 'demo' }}">
+                {{ icon_svg(app.icon or 'demo') }}
+            </div>
+            <div class="ucf-hover-text">Charge On</div>
+        </div>
+        <div class="ucf-card-stats">
+            <div class="ucf-card-stat"><span class="stat-val ucf-stat-1" data-idx="{{ idx }}">92</span><span class="stat-label" data-idx="{{ idx }}">OVR</span></div>
+            <div class="ucf-card-stat"><span class="stat-val ucf-stat-2" data-idx="{{ idx }}">88</span><span class="stat-label">SPD</span></div>
+            <div class="ucf-card-stat"><span class="stat-val ucf-stat-3" data-idx="{{ idx }}">95</span><span class="stat-label">PWR</span></div>
+        </div>
+        <div class="ucf-card-desc">{{ app.description }}</div>
+        <div class="ucf-card-footer">
+            <span class="ucf-conf-badge">Big 12 Conference</span>
+            <span class="ucf-card-year">2026 Season</span>
+        </div>
+    </div>
+
+    <!-- Default card content -->
     <div class="app-card-header">
         <div class="app-card-icon {{ app.icon or 'demo' }}">
             {{ icon_svg(app.icon or 'demo') }}
@@ -449,45 +827,52 @@
 
 {% if ns.analytics %}
 <div class="section-label">
-    <span data-default="Analytics & Intelligence" data-pokemon="Legendary Pokemon" data-ucf="Analytics & Intelligence">Analytics & Intelligence</span>
+    <span data-default="Analytics & Intelligence" data-pokemon="Legendary Pokemon" data-ucf="Offensive Lineup" data-nohug="Analytics">Analytics & Intelligence</span>
     <span class="section-count">{{ ns.analytics | length }}</span>
 </div>
 <div class="app-grid">
     {% for app in ns.analytics %}
-        {{ app_card(app) }}
+        {{ app_card(app, idx=loop.index0) }}
     {% endfor %}
 </div>
 {% endif %}
 
 {% if ns.engineering %}
 <div class="section-label">
-    <span data-default="Engineering Tools" data-pokemon="Rare Pokemon" data-ucf="Engineering Tools">Engineering Tools</span>
+    <span data-default="Engineering Tools" data-pokemon="Rare Pokemon" data-ucf="Special Teams" data-nohug="Engineering">Engineering Tools</span>
     <span class="section-count">{{ ns.engineering | length }}</span>
 </div>
 <div class="app-grid">
     {% for app in ns.engineering %}
-        {{ app_card(app) }}
+        {{ app_card(app, idx=loop.index0 + 100) }}
     {% endfor %}
 </div>
 {% endif %}
 
 {% if ns.demos %}
 <div class="section-label">
-    <span data-default="Demos & Presentations" data-pokemon="Wild Pokemon" data-ucf="Demos & Presentations">Demos & Presentations</span>
+    <span data-default="Demos & Presentations" data-pokemon="Wild Pokemon" data-ucf="Defensive Formation" data-nohug="Demos">Demos & Presentations</span>
     <span class="section-count">{{ ns.demos | length }}</span>
 </div>
 <div class="app-grid">
     {% for app in ns.demos %}
-        {{ app_card(app, is_demo=true) }}
+        {{ app_card(app, is_demo=true, idx=loop.index0 + 200) }}
     {% endfor %}
 </div>
 {% endif %}
 
-{% if is_admin %}
+<!-- Theme switcher: full for shmclane, toggle for themed users -->
+{% if show_switcher %}
 <div class="theme-switcher">
-    <button class="theme-btn" data-theme="default" onclick="setTheme('default')">Default</button>
+    <button class="theme-btn" data-theme="default" onclick="setTheme('default')">AW</button>
     <button class="theme-btn" data-theme="pokemon" onclick="setTheme('pokemon')">Pokemon</button>
     <button class="theme-btn" data-theme="ucf" onclick="setTheme('ucf')">UCF</button>
+    <button class="theme-btn" data-theme="nohug" onclick="setTheme('nohug')">DFHM</button>
+</div>
+{% elif show_toggle %}
+<div class="theme-switcher">
+    <button class="theme-btn" data-theme="default" onclick="setTheme('default')">Normal Mode</button>
+    <button class="theme-btn" data-theme="{{ default_theme }}" onclick="setTheme('{{ default_theme }}')">My Theme</button>
 </div>
 {% endif %}
 
@@ -496,66 +881,134 @@
 {% block extra_js %}
 <script>
 const THEMES = {
-    default: {
-        accent: '//',
-        title: "Dan's World of AI Magic",
-        subtitle: 'CTO Office -- Research, Prototypes & Development'
-    },
-    pokemon: {
-        accent: '\u26A1',
-        title: "Professor Kraft's Pokemon Lab",
-        subtitle: "Gotta catch 'em all -- Security Analytics Edition"
-    },
-    ucf: {
-        accent: '//',
-        title: "Dan's World of AI Magic",
-        subtitle: 'Charge On -- CTO Office Research & Development -- Go Knights!'
-    }
+    default: { accent: '//', title: "Dan's World of AI Magic", subtitle: 'CTO Office -- Research, Prototypes & Development' },
+    pokemon: { accent: '\u26A1', title: "Professor Kraft's Pokemon Lab", subtitle: "Gotta catch 'em all -- Security Analytics Edition" },
+    ucf:     { accent: '//', title: "Dan's World of AI Magic", subtitle: 'CHARGE ON \u2022 CTO OFFICE \u2022 GO KNIGHTS' },
+    nohug:   { accent: '//', title: "Dan's World of AI Magic", subtitle: "No hugs. Just tools." }
 };
 
-const DEFAULT_THEME = '{{ default_theme }}';
+const POKE_TYPES = [
+    {name:'fire',color:'#F08030',attacks:['Flamethrower','Fire Blast'],weak:'water'},
+    {name:'water',color:'#6890F0',attacks:['Hydro Pump','Surf'],weak:'electric'},
+    {name:'electric',color:'#F8D030',attacks:['Thunderbolt','Thunder'],weak:'ground'},
+    {name:'grass',color:'#78C850',attacks:['Solar Beam','Razor Leaf'],weak:'fire'},
+    {name:'psychic',color:'#F85888',attacks:['Psybeam','Future Sight'],weak:'dark'},
+    {name:'dragon',color:'#7038F8',attacks:['Dragon Pulse','Outrage'],weak:'ice'},
+    {name:'steel',color:'#B8B8D0',attacks:['Flash Cannon','Iron Tail'],weak:'fire'},
+    {name:'dark',color:'#705848',attacks:['Dark Pulse','Crunch'],weak:'fighting'},
+    {name:'ice',color:'#98D8D8',attacks:['Ice Beam','Blizzard'],weak:'fire'},
+    {name:'ghost',color:'#705898',attacks:['Shadow Ball','Hex'],weak:'dark'},
+    {name:'flying',color:'#A890F0',attacks:['Air Slash','Hurricane'],weak:'electric'},
+    {name:'fighting',color:'#C03028',attacks:['Close Combat','Aura Sphere'],weak:'psychic'},
+    {name:'normal',color:'#A8A878',attacks:['Hyper Beam','Body Slam'],weak:'fighting'}
+];
+const POKE_RARITY = ['\u25CF','\u25C6','\u2605']; // common, uncommon, rare
+const POKE_STAGES = ['Basic','Stage 1','Stage 2'];
+
+const UCF_POSITIONS = ['Quarterback','Wide Receiver','Running Back','Linebacker','Defensive End','Safety','Cornerback','Tight End','Center','Kicker','Punter','Guard'];
 
 function setTheme(name) {
-    // Remove all theme classes
-    document.body.classList.remove('theme-pokemon', 'theme-ucf');
-    if (name !== 'default') {
-        document.body.classList.add('theme-' + name);
-    }
+    document.body.classList.remove('theme-pokemon', 'theme-ucf', 'theme-nohug');
+    if (name !== 'default') document.body.classList.add('theme-' + name);
 
-    // Update hero text
     const t = THEMES[name] || THEMES.default;
     document.getElementById('hero-accent').textContent = t.accent;
     document.getElementById('hero-title').textContent = t.title;
     document.getElementById('hero-subtitle').textContent = t.subtitle;
 
-    // Update data-driven labels
     document.querySelectorAll('[data-' + name + ']').forEach(el => {
-        el.textContent = el.getAttribute('data-' + name);
+        const val = el.getAttribute('data-' + name);
+        if (val) el.textContent = val;
     });
 
-    // Update switcher buttons
     document.querySelectorAll('.theme-btn').forEach(btn => {
         btn.classList.toggle('active', btn.getAttribute('data-theme') === name);
     });
+
+    if (name === 'pokemon') initPokemonCards();
+    if (name === 'ucf') initUCFCards();
 }
 
-// Apply default theme on load
-setTheme(DEFAULT_THEME);
+function initPokemonCards() {
+    document.querySelectorAll('.app-card').forEach((card, i) => {
+        const type = POKE_TYPES[i % POKE_TYPES.length];
+        const hp = 80 + Math.floor(Math.random() * 100);
+        const stage = POKE_STAGES[Math.min(Math.floor(i / 5), 2)];
+        const rarity = POKE_RARITY[i % 3];
+        const dmg1 = 10 + (i % 6) * 10;
+        const dmg2 = 40 + (i % 5) * 20;
 
-// Fetch uptime
+        // HP value
+        card.querySelectorAll('.poke-hp-val').forEach(el => el.textContent = hp);
+
+        // Image background color
+        card.querySelectorAll('.poke-card-image').forEach(el => {
+            el.style.background = 'linear-gradient(180deg, ' + type.color + '33, ' + type.color + '11)';
+            el.style.borderColor = type.color;
+        });
+
+        // Type pill
+        card.querySelectorAll('.poke-type-pill').forEach(el => {
+            el.className = 'poke-type-pill ' + type.name;
+            el.textContent = type.name.toUpperCase();
+        });
+
+        // Evolution stage
+        card.querySelectorAll('.poke-evolution').forEach(el => {
+            el.textContent = stage;
+        });
+
+        // Attacks
+        const attackNames = card.querySelectorAll('.poke-attack-name');
+        if (attackNames[0]) attackNames[0].textContent = type.attacks[0];
+        if (attackNames[1]) { attackNames[1].textContent = type.attacks[1]; attackNames[1].classList.add('poke-special'); }
+
+        const attackDmgs = card.querySelectorAll('.poke-attack-dmg');
+        if (attackDmgs[0]) attackDmgs[0].textContent = dmg1;
+        if (attackDmgs[1]) attackDmgs[1].textContent = dmg2;
+
+        // Energy dot colors
+        card.querySelectorAll('.poke-energy-dot').forEach(dot => {
+            dot.style.background = type.color;
+        });
+
+        // Weakness
+        const weakType = POKE_TYPES.find(t => t.name === type.weak);
+        card.querySelectorAll('.poke-weakness').forEach(el => {
+            el.textContent = (weakType ? weakType.name.charAt(0).toUpperCase() + weakType.name.slice(1) : '??') + ' x2';
+        });
+
+        // Rarity
+        card.querySelectorAll('.poke-card-rarity').forEach(el => {
+            el.textContent = rarity;
+        });
+    });
+}
+
+function initUCFCards() {
+    document.querySelectorAll('.app-card').forEach((card, i) => {
+        const jersey = Math.floor(Math.random() * 99) + 1;
+        const pos = UCF_POSITIONS[i % UCF_POSITIONS.length];
+        const ovr = 85 + Math.floor(Math.random() * 15);
+        const spd = 80 + Math.floor(Math.random() * 20);
+        const pwr = 82 + Math.floor(Math.random() * 18);
+
+        card.querySelectorAll('.ucf-card-number').forEach(el => el.textContent = '#' + jersey);
+        card.querySelectorAll('.ucf-card-position').forEach(el => el.textContent = pos);
+        card.querySelectorAll('.ucf-stat-1').forEach(el => el.textContent = ovr);
+        card.querySelectorAll('.ucf-stat-2').forEach(el => el.textContent = spd);
+        card.querySelectorAll('.ucf-stat-3').forEach(el => el.textContent = pwr);
+    });
+}
+
+setTheme('{{ default_theme }}');
+
 fetch('/admin/status/data')
     .then(r => r.json())
     .then(data => {
-        const containers = data.containers || [];
-        const admin = containers.find(c => c.name === 'dw-admin');
-        if (admin && admin.uptime) {
-            document.getElementById('uptime-value').textContent = admin.uptime;
-        } else {
-            document.getElementById('uptime-value').textContent = 'OK';
-        }
+        const c = (data.containers || []).find(c => c.name === 'dw-admin');
+        document.getElementById('uptime-value').textContent = (c && c.uptime) || 'OK';
     })
-    .catch(() => {
-        document.getElementById('uptime-value').textContent = 'OK';
-    });
+    .catch(() => { document.getElementById('uptime-value').textContent = 'OK'; });
 </script>
 {% endblock %}
