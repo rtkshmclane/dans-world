@@ -553,6 +553,16 @@
     }
     .ucf-card-year { font-size: 9px; color: #555; font-family: 'Georgia', serif; }
 
+    /* UCF headshot */
+    .ucf-headshot {
+        position: absolute; z-index: 1;
+        width: 72px; height: 72px; border-radius: 50%;
+        object-fit: cover; object-position: top;
+        border: 2px solid #BA9B37;
+        box-shadow: 0 0 15px rgba(186,155,55,0.3);
+    }
+    .ucf-headshot + .ucf-field-icon { display: none; }
+
     /* UCF hover overlay */
     .ucf-card-field .ucf-hover-text {
         position: absolute; inset: 0;
@@ -808,8 +818,8 @@
         <div class="ucf-card-header">
             <span class="ucf-card-number" data-idx="{{ idx }}">#{{ idx + 1 }}</span>
             <div class="ucf-card-name-block">
-                <div class="ucf-card-name">{{ app.name }}</div>
-                <div class="ucf-card-position" data-idx="{{ idx }}">Quarterback</div>
+                <div class="ucf-card-name" data-idx="{{ idx }}">{{ app.name }}</div>
+                <div class="ucf-card-position" data-idx="{{ idx }}">QB</div>
             </div>
             <svg class="ucf-card-logo" viewBox="0 0 40 48">
                 <path d="M20 2 L36 10 L36 26 Q36 40 20 46 Q4 40 4 26 L4 10 Z" fill="#000" stroke="#BA9B37" stroke-width="2"/>
@@ -817,7 +827,8 @@
             </svg>
         </div>
         <div class="ucf-card-field">
-            <div class="ucf-field-icon {{ app.icon or 'demo' }}">
+            <img class="ucf-headshot" data-idx="{{ idx }}" src="" alt="" style="display:none;">
+            <div class="ucf-field-icon {{ app.icon or 'demo' }}" data-idx="{{ idx }}">
                 {{ icon_svg(app.icon or 'demo') }}
             </div>
             <div class="ucf-hover-text">Charge On</div>
@@ -937,7 +948,28 @@ const POKE_TYPES = [
 const POKE_RARITY = ['\u25CF','\u25C6','\u2605']; // common, uncommon, rare
 const POKE_STAGES = ['Basic','Stage 1','Stage 2'];
 
-const UCF_POSITIONS = ['Quarterback','Wide Receiver','Running Back','Linebacker','Defensive End','Safety','Cornerback','Tight End','Center','Kicker','Punter','Guard'];
+const UCF_PLAYERS = [
+    {name:'Tayven Jackson',number:2,pos:'QB',img:'https://a.espncdn.com/i/headshots/college-football/players/full/4801307.png'},
+    {name:'Davi Belfort',number:10,pos:'QB',img:'https://a.espncdn.com/i/headshots/college-football/players/full/5083371.png'},
+    {name:'Jaden Nixon',number:5,pos:'RB',img:'https://a.espncdn.com/i/headshots/college-football/players/full/4683165.png'},
+    {name:'Marcus Burke',number:3,pos:'WR',img:'https://a.espncdn.com/i/headshots/college-football/players/full/4592832.png'},
+    {name:'DJ Black',number:9,pos:'WR',img:'https://a.espncdn.com/i/headshots/college-football/players/full/5081213.png'},
+    {name:'Duane Thomas Jr.',number:7,pos:'WR',img:'https://a.espncdn.com/i/headshots/college-football/players/full/5151048.png'},
+    {name:'Nyjalik Kelly',number:9,pos:'EDGE',img:'https://a.espncdn.com/i/headshots/college-football/players/full/4726151.png'},
+    {name:'Jyaire Brown',number:15,pos:'CB',img:'https://a.espncdn.com/i/headshots/college-football/players/full/4685294.png'},
+    {name:'Jayden McDonald',number:38,pos:'LB',img:'https://a.espncdn.com/i/headshots/college-football/players/full/4708164.png'},
+    {name:'Myles Montgomery',number:22,pos:'RB',img:'https://a.espncdn.com/i/headshots/college-football/players/full/4676889.png'},
+    {name:'Chris Domercant',number:13,pos:'WR',img:'https://a.espncdn.com/i/headshots/college-football/players/full/5088159.png'},
+    {name:'Jamaal Johnson',number:99,pos:'EDGE',img:'https://a.espncdn.com/i/headshots/college-football/players/full/4738818.png'},
+    {name:'Horace Lockett',number:13,pos:'DT',img:'https://a.espncdn.com/i/headshots/college-football/players/full/4875126.png'},
+    {name:'Isaiah Reed',number:14,pos:'DB',img:'https://a.espncdn.com/i/headshots/college-football/players/full/4876462.png'},
+    {name:'Jayden Williams',number:23,pos:'DB',img:'https://a.espncdn.com/i/headshots/college-football/players/full/4709684.png'},
+    {name:'Jacurri Brown',number:11,pos:'QB',img:'https://a.espncdn.com/i/headshots/college-football/players/full/4685291.png'},
+    {name:'Cam Fancher',number:14,pos:'QB',img:'https://a.espncdn.com/i/headshots/college-football/players/full/4700135.png'},
+    {name:'Dwartney Wortham',number:87,pos:'WR',img:'https://a.espncdn.com/i/headshots/college-football/players/full/5085405.png'},
+    {name:'Dallan Coleman',number:83,pos:'TE',img:'https://a.espncdn.com/i/headshots/college-football/players/full/4433595.png'},
+    {name:'Dylan Wade',number:0,pos:'TE',img:'https://a.espncdn.com/i/headshots/college-football/players/full/4922996.png'}
+];
 
 function setTheme(name) {
     document.body.classList.remove('theme-pokemon', 'theme-ucf', 'theme-nohug');
@@ -1019,17 +1051,28 @@ function initPokemonCards() {
 
 function initUCFCards() {
     document.querySelectorAll('.app-card').forEach((card, i) => {
-        const jersey = Math.floor(Math.random() * 99) + 1;
-        const pos = UCF_POSITIONS[i % UCF_POSITIONS.length];
+        const p = UCF_PLAYERS[i % UCF_PLAYERS.length];
         const ovr = 85 + Math.floor(Math.random() * 15);
         const spd = 80 + Math.floor(Math.random() * 20);
         const pwr = 82 + Math.floor(Math.random() * 18);
 
-        card.querySelectorAll('.ucf-card-number').forEach(el => el.textContent = '#' + jersey);
-        card.querySelectorAll('.ucf-card-position').forEach(el => el.textContent = pos);
+        card.querySelectorAll('.ucf-card-number').forEach(el => el.textContent = '#' + p.number);
+        card.querySelectorAll('.ucf-card-position').forEach(el => el.textContent = p.pos);
+        card.querySelectorAll('.ucf-card-name').forEach(el => el.textContent = p.name);
         card.querySelectorAll('.ucf-stat-1').forEach(el => el.textContent = ovr);
         card.querySelectorAll('.ucf-stat-2').forEach(el => el.textContent = spd);
         card.querySelectorAll('.ucf-stat-3').forEach(el => el.textContent = pwr);
+
+        // Headshot
+        card.querySelectorAll('.ucf-headshot').forEach(img => {
+            img.src = p.img;
+            img.alt = p.name;
+            img.style.display = 'block';
+        });
+        // Hide the fallback icon when headshot is present
+        card.querySelectorAll('.ucf-card-field .ucf-field-icon').forEach(el => {
+            el.style.display = 'none';
+        });
     });
 }
 
