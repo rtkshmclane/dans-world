@@ -283,6 +283,19 @@
         background: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.3) 10px, rgba(255,255,255,0.3) 20px);
     }
 
+    /* Card art image */
+    .poke-card-art {
+        position: absolute; z-index: 1;
+        width: 100%; height: 100%;
+        object-fit: cover; object-position: center 20%;
+    }
+    .poke-card-art + .poke-img-icon { display: none; }
+    .poke-card-value {
+        font-size: 9px; font-weight: 700; color: #BA9B37;
+        background: rgba(0,0,0,0.06); padding: 1px 6px; border-radius: 3px;
+        margin-left: auto;
+    }
+
     /* Encounter text on hover */
     .poke-card-image .poke-encounter {
         position: absolute; inset: 0;
@@ -779,6 +792,7 @@
             </div>
             <div class="poke-card-image" data-idx="{{ idx }}">
                 <div class="poke-img-bg"></div>
+                <img class="poke-card-art" data-idx="{{ idx }}" src="" alt="" style="display:none;">
                 <div class="poke-img-icon {{ app.icon or 'demo' }}">
                     {{ icon_svg(app.icon or 'demo') }}
                 </div>
@@ -786,6 +800,7 @@
             </div>
             <div class="poke-card-type-row">
                 <span class="poke-type-pill" data-idx="{{ idx }}">NORMAL</span>
+                <span class="poke-card-value" data-idx="{{ idx }}"></span>
                 <span class="poke-evolution" data-idx="{{ idx }}"></span>
             </div>
             <div class="poke-card-desc">{{ app.description }}</div>
@@ -930,23 +945,30 @@ const THEMES = {
     nohug:   { accent: '$', title: "dans-world", subtitle: '' }
 };
 
-const POKE_TYPES = [
-    {name:'fire',color:'#F08030',attacks:['Flamethrower','Fire Blast'],weak:'water'},
-    {name:'water',color:'#6890F0',attacks:['Hydro Pump','Surf'],weak:'electric'},
-    {name:'electric',color:'#F8D030',attacks:['Thunderbolt','Thunder'],weak:'ground'},
-    {name:'grass',color:'#78C850',attacks:['Solar Beam','Razor Leaf'],weak:'fire'},
-    {name:'psychic',color:'#F85888',attacks:['Psybeam','Future Sight'],weak:'dark'},
-    {name:'dragon',color:'#7038F8',attacks:['Dragon Pulse','Outrage'],weak:'ice'},
-    {name:'steel',color:'#B8B8D0',attacks:['Flash Cannon','Iron Tail'],weak:'fire'},
-    {name:'dark',color:'#705848',attacks:['Dark Pulse','Crunch'],weak:'fighting'},
-    {name:'ice',color:'#98D8D8',attacks:['Ice Beam','Blizzard'],weak:'fire'},
-    {name:'ghost',color:'#705898',attacks:['Shadow Ball','Hex'],weak:'dark'},
-    {name:'flying',color:'#A890F0',attacks:['Air Slash','Hurricane'],weak:'electric'},
-    {name:'fighting',color:'#C03028',attacks:['Close Combat','Aura Sphere'],weak:'psychic'},
-    {name:'normal',color:'#A8A878',attacks:['Hyper Beam','Body Slam'],weak:'fighting'}
+// Pokemon cards sorted by real-world value (most expensive first)
+// XDR = Charizard ($420k), Detections = Blastoise, etc.
+const POKE_CARDS = [
+    {pokemon:'Charizard',type:'fire',color:'#F08030',hp:120,attacks:['Fire Spin','Flamethrower'],dmg:[100,60],weak:'water',img:'https://images.pokemontcg.io/base1/4_hires.png',value:'$420,000',rarity:'\u2605'},
+    {pokemon:'Blastoise',type:'water',color:'#6890F0',hp:100,attacks:['Hydro Pump','Rain Dance'],dmg:[80,0],weak:'electric',img:'https://images.pokemontcg.io/base1/2_hires.png',value:'$45,000',rarity:'\u2605'},
+    {pokemon:'Venusaur',type:'grass',color:'#78C850',hp:100,attacks:['Solar Beam','Energy Trans'],dmg:[80,0],weak:'fire',img:'https://images.pokemontcg.io/base1/15_hires.png',value:'$35,000',rarity:'\u2605'},
+    {pokemon:'Mewtwo',type:'psychic',color:'#F85888',hp:60,attacks:['Psychic','Barrier'],dmg:[40,0],weak:'dark',img:'https://images.pokemontcg.io/base1/10_hires.png',value:'$25,000',rarity:'\u2605'},
+    {pokemon:'Pikachu',type:'electric',color:'#F8D030',hp:40,attacks:['Thunder Jolt','Agility'],dmg:[30,20],weak:'ground',img:'https://images.pokemontcg.io/base1/58_hires.png',value:'$20,000',rarity:'\u25C6'},
+    {pokemon:'Alakazam',type:'psychic',color:'#F85888',hp:80,attacks:['Confuse Ray','Damage Swap'],dmg:[30,0],weak:'dark',img:'https://images.pokemontcg.io/base1/1_hires.png',value:'$18,000',rarity:'\u2605'},
+    {pokemon:'Dragonite',type:'dragon',color:'#7038F8',hp:100,attacks:['Slam','Step In'],dmg:[40,0],weak:'ice',img:'https://images.pokemontcg.io/fossil/4_hires.png',value:'$15,000',rarity:'\u2605'},
+    {pokemon:'Gengar',type:'ghost',color:'#705898',hp:80,attacks:['Dark Mind','Curse'],dmg:[30,0],weak:'dark',img:'https://images.pokemontcg.io/fossil/5_hires.png',value:'$12,000',rarity:'\u2605'},
+    {pokemon:'Gyarados',type:'water',color:'#6890F0',hp:100,attacks:['Dragon Rage','Bubblebeam'],dmg:[50,40],weak:'electric',img:'https://images.pokemontcg.io/base1/6_hires.png',value:'$10,000',rarity:'\u2605'},
+    {pokemon:'Machamp',type:'fighting',color:'#C03028',hp:100,attacks:['Seismic Toss','Karate Chop'],dmg:[60,50],weak:'psychic',img:'https://images.pokemontcg.io/base1/8_hires.png',value:'$8,000',rarity:'\u2605'},
+    {pokemon:'Ninetales',type:'fire',color:'#F08030',hp:80,attacks:['Flamethrower','Fire Blast'],dmg:[80,50],weak:'water',img:'https://images.pokemontcg.io/base1/12_hires.png',value:'$6,000',rarity:'\u2605'},
+    {pokemon:'Zapdos',type:'electric',color:'#F8D030',hp:90,attacks:['Thunder','Thunderbolt'],dmg:[60,40],weak:'ground',img:'https://images.pokemontcg.io/base1/16_hires.png',value:'$5,500',rarity:'\u2605'},
+    {pokemon:'Articuno',type:'ice',color:'#98D8D8',hp:70,attacks:['Freeze Dry','Blizzard'],dmg:[30,50],weak:'fire',img:'https://images.pokemontcg.io/fossil/2_hires.png',value:'$5,000',rarity:'\u2605'},
+    {pokemon:'Moltres',type:'fire',color:'#F08030',hp:70,attacks:['Wildfire','Dive Bomb'],dmg:[0,80],weak:'water',img:'https://images.pokemontcg.io/fossil/12_hires.png',value:'$4,000',rarity:'\u2605'},
+    {pokemon:'Lapras',type:'water',color:'#6890F0',hp:80,attacks:['Water Gun','Confuse Ray'],dmg:[30,10],weak:'electric',img:'https://images.pokemontcg.io/fossil/10_hires.png',value:'$3,500',rarity:'\u2605'},
+    {pokemon:'Snorlax',type:'normal',color:'#A8A878',hp:90,attacks:['Body Slam','Thick Skinned'],dmg:[30,0],weak:'fighting',img:'https://images.pokemontcg.io/jungle/11_hires.png',value:'$3,000',rarity:'\u2605'},
+    {pokemon:'Scyther',type:'flying',color:'#A890F0',hp:70,attacks:['Swords Dance','Slash'],dmg:[0,30],weak:'fire',img:'https://images.pokemontcg.io/jungle/10_hires.png',value:'$2,500',rarity:'\u2605'},
+    {pokemon:'Jolteon',type:'electric',color:'#F8D030',hp:70,attacks:['Quick Attack','Pin Missile'],dmg:[10,20],weak:'ground',img:'https://images.pokemontcg.io/jungle/4_hires.png',value:'$2,000',rarity:'\u2605'},
+    {pokemon:'Hitmonlee',type:'fighting',color:'#C03028',hp:60,attacks:['Stretch Kick','High Jump Kick'],dmg:[20,50],weak:'psychic',img:'https://images.pokemontcg.io/fossil/7_hires.png',value:'$1,800',rarity:'\u2605'},
+    {pokemon:'Raichu',type:'electric',color:'#F8D030',hp:80,attacks:['Agility','Thunder'],dmg:[20,60],weak:'ground',img:'https://images.pokemontcg.io/base1/14_hires.png',value:'$1,500',rarity:'\u2605'}
 ];
-const POKE_RARITY = ['\u25CF','\u25C6','\u2605']; // common, uncommon, rare
-const POKE_STAGES = ['Basic','Stage 1','Stage 2'];
 
 const UCF_PLAYERS = [
     {name:'Tayven Jackson',number:2,pos:'QB',img:'https://a.espncdn.com/i/headshots/college-football/players/full/4801307.png'},
@@ -995,56 +1017,67 @@ function setTheme(name) {
 
 function initPokemonCards() {
     document.querySelectorAll('.app-card').forEach((card, i) => {
-        const type = POKE_TYPES[i % POKE_TYPES.length];
-        const hp = 80 + Math.floor(Math.random() * 100);
-        const stage = POKE_STAGES[Math.min(Math.floor(i / 5), 2)];
-        const rarity = POKE_RARITY[i % 3];
-        const dmg1 = 10 + (i % 6) * 10;
-        const dmg2 = 40 + (i % 5) * 20;
+        const c = POKE_CARDS[i % POKE_CARDS.length];
 
-        // HP value
-        card.querySelectorAll('.poke-hp-val').forEach(el => el.textContent = hp);
+        // Pokemon name in card header, app name as subtitle
+        const appName = card.getAttribute('data-app-name');
+        card.querySelectorAll('.poke-card-name').forEach(el => el.textContent = c.pokemon);
+        card.querySelectorAll('.poke-hp-val').forEach(el => el.textContent = c.hp);
+
+        // Card art image
+        card.querySelectorAll('.poke-card-art').forEach(img => {
+            img.src = c.img;
+            img.alt = c.pokemon;
+            img.style.display = 'block';
+        });
+        card.querySelectorAll('.poke-img-icon').forEach(el => el.style.display = 'none');
 
         // Image background color
         card.querySelectorAll('.poke-card-image').forEach(el => {
-            el.style.background = 'linear-gradient(180deg, ' + type.color + '33, ' + type.color + '11)';
-            el.style.borderColor = type.color;
+            el.style.background = 'linear-gradient(180deg, ' + c.color + '33, ' + c.color + '11)';
+            el.style.borderColor = c.color;
         });
 
         // Type pill
         card.querySelectorAll('.poke-type-pill').forEach(el => {
-            el.className = 'poke-type-pill ' + type.name;
-            el.textContent = type.name.toUpperCase();
+            el.className = 'poke-type-pill ' + c.type;
+            el.textContent = c.type.toUpperCase();
         });
 
-        // Evolution stage
-        card.querySelectorAll('.poke-evolution').forEach(el => {
-            el.textContent = stage;
+        // Value badge
+        card.querySelectorAll('.poke-card-value').forEach(el => {
+            el.textContent = c.value;
         });
+
+        // Encounter text includes both pokemon and app name
+        card.querySelectorAll('.poke-encounter').forEach(el => {
+            el.textContent = 'Wild ' + c.pokemon + ' appeared!';
+        });
+
+        // Description keeps the app description (already in HTML)
 
         // Attacks
         const attackNames = card.querySelectorAll('.poke-attack-name');
-        if (attackNames[0]) attackNames[0].textContent = type.attacks[0];
-        if (attackNames[1]) { attackNames[1].textContent = type.attacks[1]; attackNames[1].classList.add('poke-special'); }
+        if (attackNames[0]) attackNames[0].textContent = c.attacks[0];
+        if (attackNames[1]) attackNames[1].textContent = c.attacks[1];
 
         const attackDmgs = card.querySelectorAll('.poke-attack-dmg');
-        if (attackDmgs[0]) attackDmgs[0].textContent = dmg1;
-        if (attackDmgs[1]) attackDmgs[1].textContent = dmg2;
+        if (attackDmgs[0]) attackDmgs[0].textContent = c.dmg[0] || '--';
+        if (attackDmgs[1]) attackDmgs[1].textContent = c.dmg[1] || '--';
 
         // Energy dot colors
         card.querySelectorAll('.poke-energy-dot').forEach(dot => {
-            dot.style.background = type.color;
+            dot.style.background = c.color;
         });
 
         // Weakness
-        const weakType = POKE_TYPES.find(t => t.name === type.weak);
         card.querySelectorAll('.poke-weakness').forEach(el => {
-            el.textContent = (weakType ? weakType.name.charAt(0).toUpperCase() + weakType.name.slice(1) : '??') + ' x2';
+            el.textContent = c.weak.charAt(0).toUpperCase() + c.weak.slice(1) + ' x2';
         });
 
         // Rarity
         card.querySelectorAll('.poke-card-rarity').forEach(el => {
-            el.textContent = rarity;
+            el.textContent = c.rarity;
         });
     });
 }
