@@ -745,27 +745,104 @@
     }
     body.theme-cowboys .section-count { background: #002244 !important; color: #C0C0C0 !important; }
 
+    /* Cowboys shame cards */
+    body.theme-cowboys .app-grid {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
+        gap: 20px !important;
+    }
     body.theme-cowboys .app-card {
-        border: 1px solid #d8dce2 !important;
-        background: linear-gradient(180deg, #fff 0%, #f5f7fa 100%) !important;
+        border-radius: 12px !important; border: none !important;
+        padding: 0 !important; background: none !important;
+        box-shadow: none !important; overflow: visible !important; gap: 0 !important;
     }
-    body.theme-cowboys .app-card::before {
-        height: 3px !important;
-        background: linear-gradient(90deg, #002244, #C0C0C0, #002244) !important;
-        opacity: 1 !important;
-    }
-    body.theme-cowboys .app-card:hover {
-        border-color: #002244 !important;
-        box-shadow: 0 12px 32px rgba(0,34,68,0.12) !important;
-    }
-    body.theme-cowboys .app-card-title { color: #002244 !important; }
-    body.theme-cowboys .app-card-icon { border: 2px solid #002244 !important; }
+    body.theme-cowboys .app-card::before { display: none !important; }
+    body.theme-cowboys .app-card-header,
+    body.theme-cowboys .app-card > p,
+    body.theme-cowboys .app-card-footer { display: none !important; }
 
-    /* Subtle counter in the footer */
-    body.theme-cowboys .cowboys-drought {
-        display: inline-block !important;
-        font-size: 9px; color: #999; font-style: italic;
+    body.theme-cowboys .app-card .cowboys-overlay {
+        display: flex !important;
+        flex-direction: column;
+        border-radius: 12px; overflow: hidden;
+        border: 3px solid #C0C0C0;
+        background: #002244;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.2), inset 0 0 0 1px rgba(192,192,192,0.2);
+        transition: all 0.3s ease;
     }
+    body.theme-cowboys .app-card:hover .cowboys-overlay {
+        transform: translateY(-4px);
+        box-shadow: 0 16px 40px rgba(0,34,68,0.3), 0 0 0 2px #C0C0C0;
+    }
+
+    .cowboys-card-header {
+        padding: 10px 14px; display: flex; align-items: center; gap: 10px;
+        background: linear-gradient(135deg, #002244, #00338D);
+        border-bottom: 2px solid #C0C0C0;
+    }
+    .cowboys-card-year-big {
+        font-size: 28px; font-weight: 900; color: #C0C0C0; line-height: 1;
+        min-width: 50px;
+    }
+    .cowboys-card-record {
+        font-size: 22px; font-weight: 900; color: #fff;
+    }
+    .cowboys-card-record .cowboys-losses { color: #ff6b6b; }
+    .cowboys-card-coach {
+        font-size: 10px; color: rgba(192,192,192,0.6); text-transform: uppercase;
+        letter-spacing: 0.08em;
+    }
+    .cowboys-card-star {
+        margin-left: auto; width: 28px; height: 28px; opacity: 0.3;
+    }
+
+    /* Result area */
+    .cowboys-card-result {
+        padding: 12px 14px; min-height: 60px;
+        display: flex; align-items: center; justify-content: center;
+        text-align: center;
+        font-size: 14px; font-weight: 700; line-height: 1.4;
+    }
+    .cowboys-card-result.missed {
+        background: linear-gradient(180deg, #1a0000 0%, #330000 100%);
+        color: #ff6b6b;
+    }
+    .cowboys-card-result.lost {
+        background: linear-gradient(180deg, #1a1a00 0%, #333300 100%);
+        color: #ffcc00;
+    }
+
+    /* Lowlight quote */
+    .cowboys-card-notable {
+        padding: 8px 14px; font-size: 11px; color: rgba(192,192,192,0.5);
+        background: #001a33; font-style: italic; line-height: 1.4;
+        border-top: 1px solid rgba(192,192,192,0.1);
+    }
+
+    /* App name + desc below the shame */
+    .cowboys-card-app {
+        padding: 8px 14px; background: #001122;
+        border-top: 1px solid rgba(192,192,192,0.1);
+    }
+    .cowboys-card-app-name {
+        font-size: 12px; font-weight: 700; color: #C0C0C0;
+        text-align: center; letter-spacing: 0.03em;
+    }
+    .cowboys-card-app-desc {
+        font-size: 10px; color: rgba(192,192,192,0.4);
+        text-align: center; margin-top: 2px;
+    }
+
+    /* Footer */
+    .cowboys-card-footer {
+        padding: 6px 14px; display: flex; justify-content: space-between;
+        align-items: center; background: #000;
+        border-top: 2px solid #C0C0C0;
+    }
+    .cowboys-card-drought {
+        font-size: 8px; text-transform: uppercase; letter-spacing: 0.12em;
+        color: #ff6b6b; font-weight: 700;
+    }
+    .cowboys-card-nfc { font-size: 9px; color: rgba(192,192,192,0.3); }
 
     body.theme-cowboys { background: #eef0f4 !important; }
 
@@ -954,6 +1031,28 @@
         </div>
     </div>
 
+    <!-- Cowboys shame card overlay -->
+    <div class="cowboys-overlay" style="display:none;">
+        <div class="cowboys-card-header">
+            <span class="cowboys-card-year-big" data-idx="{{ idx }}">2023</span>
+            <div>
+                <div class="cowboys-card-record" data-idx="{{ idx }}">12-<span class="cowboys-losses">5</span></div>
+                <div class="cowboys-card-coach" data-idx="{{ idx }}">Mike McCarthy</div>
+            </div>
+            <svg class="cowboys-card-star" viewBox="0 0 100 100"><polygon points="50,5 61,35 95,35 67,55 78,88 50,68 22,88 33,55 5,35 39,35" fill="none" stroke="#C0C0C0" stroke-width="3"/></svg>
+        </div>
+        <div class="cowboys-card-result" data-idx="{{ idx }}">Loading...</div>
+        <div class="cowboys-card-notable" data-idx="{{ idx }}"></div>
+        <div class="cowboys-card-app">
+            <div class="cowboys-card-app-name">{{ app.name }}</div>
+            <div class="cowboys-card-app-desc">{{ app.description }}</div>
+        </div>
+        <div class="cowboys-card-footer">
+            <span class="cowboys-card-drought" data-idx="{{ idx }}">0 years without a ring</span>
+            <span class="cowboys-card-nfc">NFC East</span>
+        </div>
+    </div>
+
     <!-- Default card content -->
     <div class="app-card-header">
         <div class="app-card-icon {{ app.icon or 'demo' }}">
@@ -1121,13 +1220,53 @@ function setTheme(name) {
     if (name === 'cowboys') initCowboysTheme();
 }
 
+// Cowboys seasons sorted by shame (worst first: worst records, then worst playoff losses)
+const COWBOYS_SEASONS = [
+    {year:2015,w:4,l:12,coach:'Jason Garrett',result:'Missed Playoffs',notable:'Worst record of the decade. Romo broken collarbone x2.',missed:true},
+    {year:2000,w:5,l:11,coach:'Dave Campo',result:'Missed Playoffs',notable:'The Dave Campo era begins. It does not go well.',missed:true},
+    {year:2001,w:5,l:11,coach:'Dave Campo',result:'Missed Playoffs',notable:'Quincy Carter era. Rock bottom.',missed:true},
+    {year:2002,w:5,l:11,coach:'Dave Campo',result:'Missed Playoffs',notable:'Three straight 5-11 seasons. Campo mercifully fired.',missed:true},
+    {year:1997,w:6,l:10,coach:'Barry Switzer',result:'Missed Playoffs',notable:'Post-dynasty collapse. Switzer gone after this.',missed:true},
+    {year:2010,w:6,l:10,coach:'Wade Phillips',result:'Missed Playoffs',notable:'Wade fired at 1-7. Garrett takes over. Still bad.',missed:true},
+    {year:2020,w:6,l:10,coach:'Mike McCarthy',result:'Missed Playoffs',notable:'Dak broken ankle. McCarthy year 1 disaster.',missed:true},
+    {year:2024,w:7,l:10,coach:'Mike McCarthy',result:'Missed Playoffs',notable:'Let the entire roster walk in free agency. Shocked it didn\'t work.',missed:true},
+    {year:2025,w:7,l:9,coach:'Brian Schottenheimer',result:'Missed Playoffs',notable:'New coach, same result. 30 years and counting.',missed:true},
+    {year:2023,w:12,l:5,coach:'Mike McCarthy',result:'Lost Wild Card to Packers 48-32',notable:'12-5 and got absolutely demolished at home by Jordan Love. 48 points allowed.',missed:false},
+    {year:2009,w:11,l:5,coach:'Wade Phillips',result:'Lost Divisional to Vikings 34-3',notable:'34-3. At home. In the shiny new stadium. 34 to 3.',missed:false},
+    {year:2007,w:13,l:3,coach:'Wade Phillips',result:'Lost Divisional to Giants 21-17',notable:'13-3 and lost at home to the Giants who went on to beat the undefeated Patriots.',missed:false},
+    {year:2016,w:13,l:3,coach:'Jason Garrett',result:'Lost Divisional to Packers 34-31',notable:'13-3 with Dak and Zeke. Aaron Rodgers game-winning drive. Dez didn\'t catch it (again).',missed:false},
+    {year:2014,w:12,l:4,coach:'Jason Garrett',result:'Lost Divisional to Packers 26-21',notable:'"Dez caught it." Except the refs said he didn\'t. Cowboys fans still in therapy.',missed:false},
+    {year:2021,w:12,l:5,coach:'Mike McCarthy',result:'Lost Wild Card to 49ers 23-17',notable:'Dak ran a QB draw with 14 seconds left. The ref tripped over the center. Comedy.',missed:false},
+    {year:2022,w:12,l:5,coach:'Mike McCarthy',result:'Lost Divisional to 49ers 19-12',notable:'Three straight 12-win seasons. Three straight one-and-dones. Pattern recognized.',missed:false},
+    {year:1998,w:10,l:6,coach:'Chan Gailey',result:'Lost Wild Card to Cardinals 20-7',notable:'Lost to the Cardinals. The Cardinals. In the playoffs.',missed:false},
+    {year:1996,w:10,l:6,coach:'Barry Switzer',result:'Lost Divisional to Panthers 26-17',notable:'First post-Super Bowl season. The decline begins.',missed:false},
+    {year:2006,w:9,l:7,coach:'Bill Parcells',result:'Lost Wild Card to Seahawks 21-20',notable:'Romo bobbled the hold on the game-winning FG. The meme that launched a thousand takes.',missed:false},
+    {year:2018,w:10,l:6,coach:'Jason Garrett',result:'Lost Divisional to Rams 30-22',notable:'Beat the Seahawks in Wild Card, then got Rammed.',missed:false}
+];
+
 function initCowboysTheme() {
-    // Calculate years since last Super Bowl win (Jan 28, 1996 = SB XXX)
-    const lastRing = new Date(1996, 0, 28);
     const now = new Date();
-    const years = now.getFullYear() - lastRing.getFullYear();
-    const days = Math.floor((now - lastRing) / (1000 * 60 * 60 * 24));
-    document.getElementById('uptime-value').textContent = years + 'yr';
+    const droughtYears = now.getFullYear() - 1996;
+    document.getElementById('uptime-value').textContent = droughtYears + 'yr';
+
+    document.querySelectorAll('.app-card').forEach((card, i) => {
+        const s = COWBOYS_SEASONS[i % COWBOYS_SEASONS.length];
+        const yearsSince = now.getFullYear() - s.year;
+
+        card.querySelectorAll('.cowboys-card-year-big').forEach(el => el.textContent = s.year);
+        card.querySelectorAll('.cowboys-card-record').forEach(el => {
+            el.innerHTML = s.w + '-<span class="cowboys-losses">' + s.l + '</span>';
+        });
+        card.querySelectorAll('.cowboys-card-coach').forEach(el => el.textContent = s.coach);
+        card.querySelectorAll('.cowboys-card-result').forEach(el => {
+            el.textContent = s.result;
+            el.className = 'cowboys-card-result ' + (s.missed ? 'missed' : 'lost');
+        });
+        card.querySelectorAll('.cowboys-card-notable').forEach(el => el.textContent = s.notable);
+        card.querySelectorAll('.cowboys-card-drought').forEach(el => {
+            el.textContent = (s.year - 1995) + (s.year === 1996 ? ' year' : ' years') + ' without a ring';
+        });
+    });
 }
 
 function initPokemonCards() {
