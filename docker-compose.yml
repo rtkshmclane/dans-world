@@ -71,7 +71,7 @@ services:
     environment:
       - ANALYTICS_DB_PATH=/app/analytics.duckdb
     restart: unless-stopped
-    mem_limit: ${INTEGRATION_ADOPTION_MEMORY_LIMIT:-1g}
+    mem_limit: ${INTEGRATION_ADOPTION_MEMORY_LIMIT:-2g}
     networks:
       - dw-net
 
