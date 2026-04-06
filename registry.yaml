@@ -163,6 +163,16 @@ apps:
     source:
       static: true
 
+  - id: integration-explorer
+    name: Integration Explorer
+    description: "Battle cards, competitive intel, and IDR R&D readiness tracker"
+    url: /apps/integration-explorer/
+    icon: catalog
+    groups: [analytics, admin]
+    author: Sam
+    source:
+      static: true
+
 demos:
   - id: aurora-xdr-lite
     name: Aurora XDR Lite
