@@ -826,7 +826,7 @@
         </div>
 
         <h1><span class="accent" id="hero-accent">//</span> <span id="hero-title">Dan's World of AI Magic</span></h1>
-        <p class="hero-subtitle" id="hero-subtitle">CTO Office -- Research, Prototypes & Development</p>
+        <p class="hero-subtitle" id="hero-subtitle">Office of the CTO -- Research, Prototypes & Development</p>
 
         <div class="hero-stats">
             <div class="hero-stat">
@@ -1034,9 +1034,9 @@
 {% block extra_js %}
 <script>
 const THEMES = {
-    default: { accent: '//', title: "Dan's World of AI Magic", subtitle: 'CTO Office -- Research, Prototypes & Development' },
+    default: { accent: '//', title: "Dan's World of AI Magic", subtitle: 'Office of the CTO -- Research, Prototypes & Development' },
     pokemon: { accent: '\u26A1', title: "Professor Kraft's Pokemon Lab", subtitle: "Gotta catch 'em all -- Security Analytics Edition" },
-    ucf:     { accent: '//', title: "Dan's World of AI Magic", subtitle: 'CHARGE ON \u2022 CTO OFFICE \u2022 GO KNIGHTS' },
+    ucf:     { accent: '//', title: "Dan's World of AI Magic", subtitle: 'CHARGE ON \u2022 OFFICE OF THE CTO \u2022 GO KNIGHTS' },
     cowboys: { accent: '\u2606', title: "Dan's World of AI Magic", subtitle: "America's Team \u2022 Powered by Hope Since 1995" },
     nohug:   { accent: '$', title: "dans-world", subtitle: '' }
 };
@@ -1090,7 +1090,7 @@ const UCF_PLAYERS = [
 ];
 
 function setTheme(name) {
-    document.body.classList.remove('theme-pokemon', 'theme-ucf', 'theme-nohug');
+    document.body.classList.remove('theme-pokemon', 'theme-ucf', 'theme-nohug', 'theme-cowboys');
     if (name !== 'default') document.body.classList.add('theme-' + name);
 
     const t = THEMES[name] || THEMES.default;
@@ -1098,14 +1098,23 @@ function setTheme(name) {
     document.getElementById('hero-title').textContent = t.title;
     document.getElementById('hero-subtitle').textContent = t.subtitle;
 
-    document.querySelectorAll('[data-' + name + ']').forEach(el => {
-        const val = el.getAttribute('data-' + name);
-        if (val) el.textContent = val;
+    // Reset all data-attributed text to defaults first, then apply theme
+    document.querySelectorAll('[data-default]').forEach(el => {
+        el.textContent = el.getAttribute('data-default');
     });
+    if (name !== 'default') {
+        document.querySelectorAll('[data-' + name + ']').forEach(el => {
+            const val = el.getAttribute('data-' + name);
+            if (val) el.textContent = val;
+        });
+    }
 
     document.querySelectorAll('.theme-btn').forEach(btn => {
         btn.classList.toggle('active', btn.getAttribute('data-theme') === name);
     });
+
+    // Reset uptime to default
+    document.getElementById('uptime-value').textContent = '--';
 
     if (name === 'pokemon') initPokemonCards();
     if (name === 'ucf') initUCFCards();
