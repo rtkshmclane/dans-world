@@ -166,6 +166,12 @@ def init_db():
     except sqlite3.OperationalError:
         pass
 
+    # Migrate: add theme column to users
+    try:
+        db.execute("ALTER TABLE users ADD COLUMN theme TEXT DEFAULT 'default'")
+    except sqlite3.OperationalError:
+        pass
+
     # Migrate: add columns to existing dropzone tables
     for col, defn in [("is_report", "INTEGER DEFAULT 0"), ("report_title", "TEXT"),
                        ("category", "TEXT DEFAULT 'Uncategorized'")]:
@@ -209,10 +215,11 @@ with app.app_context():
 # JWT helpers
 # ---------------------------------------------------------------------------
 
-def create_token(username, groups):
+def create_token(username, groups, theme="default"):
     payload = {
         "sub": username,
         "groups": groups,
+        "theme": theme or "default",
         "iat": datetime.datetime.utcnow(),
         "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=JWT_EXPIRY_HOURS),
     }
@@ -296,7 +303,8 @@ def auth_login():
     )
     db.commit()
 
-    token = create_token(username, groups)
+    theme = user["theme"] if "theme" in user.keys() else "default"
+    token = create_token(username, groups, theme)
     resp = make_response(redirect(next_url))
     resp.set_cookie(
         COOKIE_NAME, token,
@@ -476,6 +484,7 @@ def admin_add_user():
     username = request.form.get("username", "").strip().lower()
     password = request.form.get("password", "")
     display_name = request.form.get("display_name", "").strip() or username
+    theme = request.form.get("theme", "default").strip() or "default"
     group_ids = request.form.getlist("groups")
 
     if not username or not password:
@@ -486,8 +495,8 @@ def admin_add_user():
     try:
         pw_hash = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
         db.execute(
-            "INSERT INTO users (username, password_hash, display_name) VALUES (?, ?, ?)",
-            (username, pw_hash, display_name),
+            "INSERT INTO users (username, password_hash, display_name, theme) VALUES (?, ?, ?, ?)",
+            (username, pw_hash, display_name, theme),
         )
         user_id = db.execute("SELECT id FROM users WHERE username = ?", (username,)).fetchone()["id"]
 
@@ -511,11 +520,13 @@ def admin_edit_user(user_id):
     display_name = request.form.get("display_name", "").strip()
     is_active = request.form.get("is_active") == "on"
     new_password = request.form.get("password", "").strip()
+    theme = request.form.get("theme", "default").strip() or "default"
     group_ids = request.form.getlist("groups")
 
     if display_name:
         db.execute("UPDATE users SET display_name = ? WHERE id = ?", (display_name, user_id))
     db.execute("UPDATE users SET is_active = ? WHERE id = ?", (1 if is_active else 0, user_id))
+    db.execute("UPDATE users SET theme = ? WHERE id = ?", (theme, user_id))
 
     if new_password:
         pw_hash = bcrypt.hashpw(new_password.encode(), bcrypt.gensalt()).decode()

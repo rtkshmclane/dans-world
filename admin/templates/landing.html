@@ -1,8 +1,9 @@
 {% extends "base.html" %}
 {% set active_page = "home" %}
-{% set default_theme = 'pokemon' if (user and user.sub == 'ckraft') else 'ucf' if (user and user.sub == 'dschiappa') else 'nohug' if (user and user.sub == 'msetzer') else 'cowboys' if (user and user.sub == 'lroush') else 'default' %}
+{% set user_theme = user.theme if (user and user.theme) else 'default' %}
+{% set default_theme = user_theme %}
 {% set show_switcher = user and user.sub in ['shmclane'] %}
-{% set show_toggle = user and user.sub in ['ckraft', 'dschiappa', 'msetzer', 'lroush'] %}
+{% set show_toggle = user_theme != 'default' %}
 
 {% block title %}Dan's World of AI Magic{% endblock %}
 

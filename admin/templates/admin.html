@@ -194,6 +194,7 @@
                     <th>Username</th>
                     <th>Display Name</th>
                     <th>Groups</th>
+                    <th>Theme</th>
                     <th>Status</th>
                     <th>Last Login</th>
                     <th>Actions</th>
@@ -213,6 +214,7 @@
                             <span class="badge badge-gray">none</span>
                         {% endif %}
                     </td>
+                    <td><span class="badge badge-gray">{{ u.theme or 'default' }}</span></td>
                     <td>
                         {% if u.is_active %}
                             <span class="badge badge-green">Active</span>
@@ -224,7 +226,7 @@
                     <td>
                         <div class="actions">
                             <button class="btn btn-secondary btn-sm"
-                                    onclick="openEditModal({{ u.id }}, '{{ u.display_name }}', {{ u.is_active }}, '{{ u.group_names or '' }}')">Edit</button>
+                                    onclick="openEditModal({{ u.id }}, '{{ u.display_name }}', {{ u.is_active }}, '{{ u.group_names or '' }}', '{{ u.theme or 'default' }}')">Edit</button>
                             {% if u.username != 'admin' %}
                             <form method="POST" action="/admin/users/{{ u.id }}/delete"
                                   onsubmit="return confirm('Delete user {{ u.username }}?')">
@@ -345,6 +347,16 @@
                 <input type="text" id="new-display" name="display_name">
             </div>
             <div class="form-group">
+                <label for="new-theme">Theme</label>
+                <select id="new-theme" name="theme" style="width:100%; padding:8px; border:1px solid var(--aw-gray-300); border-radius:6px;">
+                    <option value="default">Default (AW)</option>
+                    <option value="pokemon">Pokemon</option>
+                    <option value="ucf">UCF Knights</option>
+                    <option value="cowboys">Cowboys</option>
+                    <option value="nohug">Don't Hug Me</option>
+                </select>
+            </div>
+            <div class="form-group">
                 <label>Groups</label>
                 <div class="checkbox-group">
                     {% for grp in groups %}
@@ -408,6 +420,16 @@
                 </label>
             </div>
             <div class="form-group">
+                <label for="edit-theme">Theme</label>
+                <select id="edit-theme" name="theme" style="width:100%; padding:8px; border:1px solid var(--aw-gray-300); border-radius:6px;">
+                    <option value="default">Default (AW)</option>
+                    <option value="pokemon">Pokemon</option>
+                    <option value="ucf">UCF Knights</option>
+                    <option value="cowboys">Cowboys</option>
+                    <option value="nohug">Don't Hug Me</option>
+                </select>
+            </div>
+            <div class="form-group">
                 <label>Groups</label>
                 <div class="checkbox-group" id="edit-groups">
                     {% for grp in groups %}
@@ -429,10 +451,11 @@
 
 {% block extra_js %}
 <script>
-function openEditModal(userId, displayName, isActive, groupNames) {
+function openEditModal(userId, displayName, isActive, groupNames, theme) {
     document.getElementById('editUserForm').action = '/admin/users/' + userId + '/edit';
     document.getElementById('edit-display').value = displayName;
     document.getElementById('edit-active').checked = !!isActive;
+    document.getElementById('edit-theme').value = theme || 'default';
 
     var groups = groupNames ? groupNames.split(',') : [];
     document.querySelectorAll('#edit-groups input[type=checkbox]').forEach(function(cb) {
