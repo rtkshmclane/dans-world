@@ -1,0 +1,1523 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Detection Catalog v2 -- Prototype</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ===================== Fenrir v2 Design Tokens ===================== */
+:root {
+    --aw-primary-light: #0099FF;
+    --aw-primary-main: #0059B2;
+    --aw-primary-dark: #00244C;
+    --aw-secondary-light: #f8a863;
+    --aw-secondary-main: #FF730F;
+    --aw-error-light: #ef5350;
+    --aw-error-main: #d32f2f;
+    --aw-warning-main: #ef6c00;
+    --aw-success-light: #4caf50;
+    --aw-success-main: #2e7d32;
+    --aw-info-main: #1983d4;
+    --aw-text-primary: #000000de;
+    --aw-text-secondary: #00000099;
+    --aw-text-muted: #8A94A6;
+    --aw-text-hint: #616161;
+    --aw-text-inverse: #FFFFFF;
+    --aw-bg-default: #FFFFFF;
+    --aw-bg-paper: #FFFFFF;
+    --aw-bg-base: #f5f6f8;
+    --aw-bg-elevated: #FFFFFF;
+    --aw-divider: #E0E0E0;
+    --aw-border: #E2E6ED;
+    --aw-border-light: #EEF1F5;
+    --aw-accent-blue: #2B7DE9;
+    --aw-radius-sm: 4px;
+    --aw-radius-md: 6px;
+    --aw-radius-lg: 8px;
+    --aw-shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+    --aw-shadow-md: 0 2px 8px rgba(0,0,0,0.12);
+    --aw-shadow-dropdown: 0 4px 20px rgba(0,0,0,0.15);
+    --aw-hover-subtle: rgba(0,0,0,0.04);
+    --aw-hover-item: rgba(0,89,178,0.06);
+    --aw-active-item: rgba(0,89,178,0.08);
+    --aw-active-color: var(--aw-primary-main);
+    --aw-primary-rgb: 0, 89, 178;
+    --aw-success-rgb: 46, 125, 50;
+    --aw-secondary-rgb: 255, 115, 15;
+    --aw-error-rgb: 198, 40, 40;
+    --aw-tint-opacity: 0.15;
+    --aw-severity-critical: #d32f2f;
+    --aw-severity-high: #ef6c00;
+    --aw-severity-medium: #f9a825;
+    --aw-severity-low: #2e7d32;
+    --sidebar-w: 240px;
+    --header-h: 56px;
+    --shelf-w: 480px;
+}
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--aw-bg-base);
+    color: var(--aw-text-primary);
+}
+a { text-decoration: none; color: inherit; }
+
+/* ===================== Header ===================== */
+.aw-header {
+    display: flex; align-items: center; height: var(--header-h);
+    background: var(--aw-bg-paper); border-bottom: 1px solid var(--aw-divider);
+    padding: 0 16px; position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+}
+.aw-header .hamburger {
+    font-size: 20px; color: var(--aw-text-hint); cursor: pointer; margin-right: 12px;
+    background: none; border: none; padding: 4px; display: flex; align-items: center;
+}
+.aw-header .header-logo { height: 28px; margin-right: 12px; }
+.aw-header .sep { width: 1px; height: 24px; background: var(--aw-divider); margin: 0 12px; flex-shrink: 0; }
+.aw-header .header-app-name { color: var(--aw-text-muted); font-size: 14px; white-space: nowrap; }
+.aw-header .right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+.customer-selector {
+    display: flex; align-items: center; gap: 6px; padding: 6px 12px;
+    border: 1px solid var(--aw-border); border-radius: var(--aw-radius-md);
+    font-size: 13px; font-weight: 500; color: var(--aw-text-primary); cursor: pointer;
+    background: var(--aw-bg-paper);
+}
+.customer-selector:hover { border-color: var(--aw-primary-main); }
+
+/* ===================== Layout ===================== */
+.aw-layout { display: flex; margin-top: var(--header-h); min-height: calc(100vh - var(--header-h)); }
+
+/* ===================== Sidebar ===================== */
+.aw-sidebar {
+    width: var(--sidebar-w); min-width: var(--sidebar-w); background: var(--aw-bg-paper);
+    border-right: 1px solid var(--aw-divider); position: fixed; top: var(--header-h); bottom: 0;
+    left: 0; z-index: 100; display: flex; flex-direction: column; overflow-y: auto;
+}
+.nav-section-label {
+    padding: 16px 12px 4px; font-size: 10px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 1.2px; color: var(--aw-text-muted);
+}
+.nav-item {
+    display: flex; align-items: center; gap: 12px; padding: 10px 12px; font-size: 14px; font-weight: 500;
+    color: var(--aw-text-secondary); cursor: pointer; border-left: 3px solid transparent;
+    transition: background 0.15s;
+}
+.nav-item:hover { background: var(--aw-hover-item); }
+.nav-item.active { border-left-color: var(--aw-active-color); background: var(--aw-active-item); color: var(--aw-active-color); }
+.nav-icon { width: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.nav-label { flex: 1; }
+.sub-item {
+    display: block; padding: 8px 12px 8px 48px; font-size: 13px; color: var(--aw-text-secondary);
+    cursor: pointer; border-left: 3px solid transparent; transition: background 0.15s;
+}
+.sub-item:hover { background: var(--aw-hover-item); }
+.sub-item.active { border-left-color: var(--aw-active-color); background: var(--aw-active-item); color: var(--aw-active-color); }
+
+/* ===================== Content ===================== */
+.aw-content {
+    margin-left: var(--sidebar-w); padding: 24px 32px; flex: 1;
+    transition: margin-right 0.3s ease;
+}
+.aw-content.shelf-open { margin-right: var(--shelf-w); }
+.page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.page-title { font-size: 22px; font-weight: 400; color: var(--aw-text-primary); }
+
+/* ===================== Stat Cards ===================== */
+.stats-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 24px; }
+.stat-card {
+    background: var(--aw-bg-paper); border-radius: 12px; border: 1px solid var(--aw-border);
+    padding: 16px; position: relative; overflow: hidden;
+}
+.stat-card .accent { position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+.stat-card .accent.blue { background: linear-gradient(90deg, var(--aw-primary-main), var(--aw-primary-light)); }
+.stat-card .accent.green { background: linear-gradient(90deg, var(--aw-success-main), var(--aw-success-light)); }
+.stat-card .accent.orange { background: linear-gradient(90deg, var(--aw-secondary-main), var(--aw-secondary-light)); }
+.stat-card .accent.red { background: linear-gradient(90deg, var(--aw-error-main), var(--aw-error-light)); }
+.stat-label { font-size: 11px; color: var(--aw-text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-bottom: 6px; }
+.stat-value { font-size: 28px; font-weight: 300; color: var(--aw-text-primary); line-height: 1; }
+
+/* ===================== Tabs ===================== */
+.aw-tabs {
+    display: flex; border-bottom: 1px solid var(--aw-border); margin-bottom: 20px;
+}
+.aw-tab {
+    padding: 12px 20px; font-size: 13px; font-weight: 500; cursor: pointer;
+    border-bottom: 2px solid transparent; color: var(--aw-text-secondary);
+    transition: all 0.15s; background: none; border-top: none; border-left: none; border-right: none;
+    font-family: inherit; display: flex; align-items: center; gap: 8px;
+}
+.aw-tab:hover { color: var(--aw-text-primary); background: var(--aw-hover-item); }
+.aw-tab.active { color: var(--aw-active-color); border-bottom-color: var(--aw-active-color); }
+.tab-count {
+    font-size: 10px; background: var(--aw-border-light); padding: 1px 6px; border-radius: 8px;
+}
+.aw-tab.active .tab-count { background: rgba(var(--aw-primary-rgb), var(--aw-tint-opacity)); color: var(--aw-active-color); }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ===================== Table Toolbar ===================== */
+.toolbar {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
+}
+.toolbar-search {
+    flex: 1; padding: 8px 12px 8px 36px; border: 1px solid var(--aw-border); border-radius: var(--aw-radius-md);
+    font-size: 13px; font-family: inherit; outline: none; background: var(--aw-bg-paper); color: var(--aw-text-primary);
+    position: relative;
+}
+.toolbar-search:focus { border-color: var(--aw-active-color); }
+.search-wrap { position: relative; flex: 1; }
+.search-wrap svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--aw-text-muted); }
+.filter-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.filter-chip {
+    padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight: 500;
+    cursor: pointer; background: var(--aw-hover-subtle); color: var(--aw-text-secondary);
+    border: 1px solid transparent; transition: all 0.15s;
+}
+.filter-chip:hover { background: var(--aw-hover-item); }
+.filter-chip.active {
+    background: rgba(var(--aw-primary-rgb), var(--aw-tint-opacity)); color: var(--aw-active-color);
+    border-color: var(--aw-active-color);
+}
+
+/* ===================== Data Table ===================== */
+.aw-table { width: 100%; border-collapse: collapse; }
+.aw-table th {
+    text-align: left; padding: 10px 14px; font-size: 11px; font-weight: 600;
+    color: var(--aw-text-muted); text-transform: uppercase; letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--aw-border); background: var(--aw-bg-paper);
+    position: sticky; top: 0; z-index: 5;
+}
+.aw-table td {
+    padding: 10px 14px; font-size: 13px; border-bottom: 1px solid var(--aw-border-light);
+    color: var(--aw-text-primary);
+}
+.aw-table tr { cursor: pointer; transition: background 0.1s; }
+.aw-table tbody tr:hover td { background: var(--aw-hover-item); }
+.aw-table tbody tr.selected td { background: var(--aw-active-item); }
+
+/* ===================== Badges ===================== */
+.badge {
+    display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px;
+    border-radius: 12px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px;
+}
+.badge.ga { background: rgba(var(--aw-success-rgb), var(--aw-tint-opacity)); color: var(--aw-success-main); }
+.badge.beta { background: rgba(var(--aw-primary-rgb), var(--aw-tint-opacity)); color: var(--aw-primary-main); }
+.badge.new-badge {
+    background: rgba(var(--aw-secondary-rgb), var(--aw-tint-opacity)); color: var(--aw-secondary-main);
+    font-size: 9px; padding: 2px 6px; margin-left: 6px;
+}
+.badge.high { background: rgba(var(--aw-success-rgb), var(--aw-tint-opacity)); color: var(--aw-success-main); }
+.badge.medium { background: rgba(var(--aw-secondary-rgb), var(--aw-tint-opacity)); color: var(--aw-warning-main); }
+.badge.low { background: rgba(var(--aw-error-rgb), var(--aw-tint-opacity)); color: var(--aw-error-main); }
+
+/* ===================== MITRE ATT&CK Navigator Matrix ===================== */
+.mitre-matrix-wrap {
+    background: var(--aw-bg-paper); border: 1px solid var(--aw-border); border-radius: 12px;
+    overflow-x: auto; padding: 0;
+}
+.mitre-matrix {
+    display: grid; grid-template-columns: repeat(14, minmax(110px, 1fr));
+    min-width: 1540px; gap: 0;
+}
+.tactic-col { display: flex; flex-direction: column; }
+.tactic-header-cell {
+    background: linear-gradient(180deg, var(--aw-primary-dark) 0%, var(--aw-primary-main) 100%);
+    color: #fff; padding: 10px 6px; text-align: center; position: sticky; top: 0; z-index: 5;
+    border-right: 1px solid rgba(255,255,255,0.15);
+    height: 90px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.tactic-col:first-child .tactic-header-cell { border-radius: 12px 0 0 0; }
+.tactic-col:last-child .tactic-header-cell { border-radius: 0 12px 0 0; border-right: none; }
+.tactic-header-cell .tactic-name { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; line-height: 1.3; }
+.tactic-header-cell .tactic-id { font-size: 9px; opacity: 0.6; margin-top: 2px; }
+.tactic-header-cell .tactic-stats { font-size: 9px; opacity: 0.8; margin-top: 4px; }
+.tactic-header-cell .tactic-bar { height: 3px; background: rgba(255,255,255,0.2); border-radius: 2px; margin-top: 6px; overflow: hidden; }
+.tactic-header-cell .tactic-bar-fill { height: 100%; background: rgba(255,255,255,0.8); border-radius: 2px; }
+.technique-cells { flex: 1; }
+.technique-cell {
+    padding: 3px; border-right: 1px solid var(--aw-border-light);
+    border-bottom: 1px solid var(--aw-border-light);
+    height: 52px; /* fixed height for cross-column row alignment */
+}
+.tactic-col:last-child .technique-cell { border-right: none; }
+.tech-box {
+    border-radius: var(--aw-radius-sm); padding: 4px 4px; cursor: pointer;
+    transition: all 0.15s; text-align: center; position: relative;
+    height: 100%; width: 100%;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.tech-box:hover { transform: scale(1.05); z-index: 2; box-shadow: var(--aw-shadow-md); }
+.tech-box.selected { outline: 2px solid var(--aw-primary-main); outline-offset: 1px; }
+.tech-box .tech-id { font-size: 9px; font-weight: 700; line-height: 1; }
+.tech-box .tech-name { font-size: 8px; line-height: 1.2; margin-top: 2px; max-height: 20px; overflow: hidden; }
+.tech-box .tech-count-badge {
+    position: absolute; top: 2px; right: 2px; font-size: 7px; font-weight: 700;
+    background: rgba(0,0,0,0.25); color: #fff; border-radius: 6px; padding: 1px 4px; min-width: 14px;
+}
+/* Heat levels */
+.tech-box.heat-0 { background: #f0f0f0; color: var(--aw-text-muted); }
+.tech-box.heat-0 .tech-count-badge { background: #ccc; color: #888; }
+.tech-box.heat-1 { background: #c8e6c9; color: #1b5e20; }
+.tech-box.heat-2 { background: #81c784; color: #1b5e20; }
+.tech-box.heat-3 { background: #4caf50; color: #fff; }
+.tech-box.heat-4 { background: #2e7d32; color: #fff; }
+.tech-box.heat-5 { background: #1b5e20; color: #fff; }
+/* Legend */
+.matrix-legend {
+    display: flex; align-items: center; gap: 16px; padding: 12px 16px;
+    border-top: 1px solid var(--aw-border-light); font-size: 11px; color: var(--aw-text-muted);
+}
+.legend-item { display: flex; align-items: center; gap: 5px; }
+.legend-swatch { width: 16px; height: 12px; border-radius: 2px; }
+.empty-cell { height: 100%; }
+
+/* ===================== Slide-out Detail Shelf ===================== */
+.detail-shelf {
+    position: fixed; top: var(--header-h); right: 0; bottom: 0; width: var(--shelf-w);
+    background: var(--aw-bg-paper); border-left: 1px solid var(--aw-divider);
+    box-shadow: -4px 0 24px rgba(0,0,0,0.1); z-index: 150;
+    display: flex; flex-direction: column;
+    transform: translateX(100%); transition: transform 0.3s ease;
+}
+.detail-shelf.open { transform: translateX(0); }
+.shelf-header {
+    padding: 16px 20px; border-bottom: 1px solid var(--aw-divider);
+    display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+}
+.shelf-header .shelf-title { font-size: 16px; font-weight: 600; color: var(--aw-text-primary); flex: 1; margin-right: 12px; }
+.shelf-close {
+    background: none; border: none; cursor: pointer; padding: 6px;
+    color: var(--aw-text-hint); border-radius: var(--aw-radius-sm);
+    display: flex; align-items: center; transition: all 0.15s;
+}
+.shelf-close:hover { color: var(--aw-text-primary); background: var(--aw-hover-subtle); }
+
+/* View toggle */
+.view-toggle {
+    display: inline-flex; border: 1px solid var(--aw-border); border-radius: 16px; padding: 2px;
+    background: var(--aw-bg-base); flex-shrink: 0;
+}
+.view-toggle-btn {
+    padding: 4px 14px; border-radius: 14px; font-size: 11px; font-weight: 600;
+    cursor: pointer; border: none; background: transparent; color: var(--aw-text-muted);
+    transition: all 0.2s; font-family: inherit;
+}
+.view-toggle-btn.active {
+    background: var(--aw-bg-paper); color: var(--aw-primary-main);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.shelf-body { flex: 1; overflow-y: auto; padding: 20px; }
+.shelf-section { margin-bottom: 20px; }
+.shelf-section-title {
+    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+    color: var(--aw-text-muted); margin-bottom: 10px; padding-bottom: 6px;
+    border-bottom: 1px solid var(--aw-border-light);
+}
+.shelf-field { margin-bottom: 12px; }
+.shelf-field-label { font-size: 11px; color: var(--aw-text-muted); font-weight: 500; margin-bottom: 3px; }
+.shelf-field-value { font-size: 13px; color: var(--aw-text-primary); line-height: 1.5; }
+.shelf-field-value.mono { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12px; }
+
+.ai-summary-box {
+    background: linear-gradient(135deg, rgba(var(--aw-secondary-rgb), 0.05) 0%, rgba(var(--aw-primary-rgb), 0.05) 100%);
+    border: 1px solid rgba(var(--aw-secondary-rgb), 0.2);
+    border-radius: var(--aw-radius-lg); padding: 14px; font-size: 13px; line-height: 1.6;
+    color: var(--aw-text-primary);
+}
+.ai-summary-box .ai-label {
+    font-size: 10px; font-weight: 700; color: var(--aw-secondary-main);
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;
+    display: flex; align-items: center; gap: 6px;
+}
+
+.mitre-tag {
+    display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px;
+    background: rgba(var(--aw-primary-rgb), var(--aw-tint-opacity));
+    border-radius: var(--aw-radius-sm); font-size: 11px; font-weight: 500;
+    color: var(--aw-primary-main); margin: 2px;
+}
+
+.code-block {
+    background: #1e1e2e; color: #cdd6f4; border-radius: var(--aw-radius-md);
+    padding: 14px; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 11px;
+    line-height: 1.6; overflow-x: auto; max-height: 300px; overflow-y: auto;
+    white-space: pre-wrap; word-break: break-all;
+}
+
+.internal-only { display: none; }
+.shelf-body.internal .internal-only { display: block; }
+
+.log-source-tag {
+    display: inline-flex; padding: 3px 8px; background: var(--aw-hover-subtle);
+    border-radius: var(--aw-radius-sm); font-size: 11px; color: var(--aw-text-secondary);
+    margin: 2px;
+}
+
+/* ===================== Empty State ===================== */
+.empty-shelf {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    height: 100%; color: var(--aw-text-muted); text-align: center; padding: 40px;
+}
+.empty-shelf svg { width: 48px; height: 48px; margin-bottom: 16px; opacity: 0.3; }
+.empty-shelf .empty-text { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+.empty-shelf .empty-hint { font-size: 12px; }
+
+/* ===================== Pagination ===================== */
+.pagination {
+    display: flex; align-items: center; justify-content: space-between; padding: 12px 0;
+    font-size: 12px; color: var(--aw-text-muted);
+}
+.pagination-buttons { display: flex; gap: 4px; }
+.pagination-btn {
+    padding: 6px 10px; border: 1px solid var(--aw-border); border-radius: var(--aw-radius-sm);
+    background: var(--aw-bg-paper); cursor: pointer; font-size: 12px; font-family: inherit;
+    color: var(--aw-text-secondary); transition: all 0.15s;
+}
+.pagination-btn:hover { border-color: var(--aw-primary-main); color: var(--aw-primary-main); }
+.pagination-btn.active { background: var(--aw-primary-main); color: #fff; border-color: var(--aw-primary-main); }
+
+/* ===================== Vulnerability Coverage Tab ===================== */
+.vuln-search-panel {
+    background: var(--aw-bg-paper); border: 1px solid var(--aw-border); border-radius: 12px;
+    padding: 20px; margin-bottom: 20px;
+}
+.vuln-search-panel h2 { font-size: 16px; font-weight: 600; margin: 0 0 16px 0; }
+.vuln-search-row { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; }
+.vuln-form-group { display: flex; flex-direction: column; gap: 4px; }
+.vuln-form-label { font-size: 11px; font-weight: 600; color: var(--aw-text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.vuln-form-input {
+    padding: 8px 14px; border: 1px solid var(--aw-border); border-radius: var(--aw-radius-md);
+    font-size: 13px; font-family: inherit; background: var(--aw-bg-paper); color: var(--aw-text-primary); outline: none;
+}
+.vuln-form-input:focus { border-color: var(--aw-active-color); }
+.vuln-form-select {
+    padding: 8px 14px; border: 1px solid var(--aw-border); border-radius: var(--aw-radius-md);
+    font-size: 13px; font-family: inherit; background: var(--aw-bg-paper); color: var(--aw-text-primary); min-width: 150px;
+}
+.vuln-btn-primary {
+    padding: 8px 20px; border-radius: var(--aw-radius-md); border: none;
+    background: var(--aw-primary-main); color: #fff; font-size: 13px; font-weight: 500;
+    cursor: pointer; font-family: inherit; transition: background 0.15s;
+}
+.vuln-btn-primary:hover { background: var(--aw-primary-dark); }
+.vuln-btn-outline {
+    padding: 8px 16px; border-radius: var(--aw-radius-md); border: 1px solid var(--aw-border);
+    background: var(--aw-bg-paper); color: var(--aw-text-muted); font-size: 13px;
+    cursor: pointer; font-family: inherit; transition: all 0.15s;
+}
+.vuln-btn-outline:hover { border-color: var(--aw-primary-main); color: var(--aw-primary-main); }
+.vuln-filter-row { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+.vuln-filter-select {
+    padding: 6px 12px; border: 1px solid var(--aw-border); border-radius: var(--aw-radius-md);
+    font-size: 12px; font-family: inherit; background: var(--aw-bg-paper); min-width: 160px;
+}
+.vuln-clear-link { color: var(--aw-primary-main); text-decoration: none; font-size: 12px; cursor: pointer; }
+.vuln-clear-link:hover { text-decoration: underline; }
+.cvss-badge {
+    display: inline-flex; align-items: center; justify-content: center; min-width: 36px;
+    padding: 3px 8px; border-radius: 12px; font-size: 12px; font-weight: 700; color: #fff;
+}
+.cvss-critical { background: var(--aw-severity-critical); }
+.cvss-high { background: var(--aw-severity-high); }
+.cvss-medium { background: var(--aw-severity-medium); color: #333; }
+.cvss-low { background: var(--aw-severity-low); }
+.detection-link-badge {
+    display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px;
+    border-radius: 12px; font-size: 11px; font-weight: 600; cursor: pointer;
+}
+.detection-link-badge.has-det {
+    background: rgba(var(--aw-success-rgb), var(--aw-tint-opacity)); color: var(--aw-success-main);
+}
+.detection-link-badge.no-det {
+    background: rgba(var(--aw-error-rgb), 0.08); color: var(--aw-text-muted);
+}
+.vuln-results-header {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;
+}
+.vuln-results-header h2 { font-size: 16px; font-weight: 600; margin: 0; }
+.vuln-count { font-size: 12px; color: var(--aw-text-muted); }
+.stat-card .accent.purple { background: linear-gradient(90deg, #7b1fa2, #ba68c8); }
+
+/* ===================== Responsive ===================== */
+@media (max-width: 1200px) {
+    .stats-row { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 800px) {
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<!-- ===================== HEADER ===================== -->
+<header class="aw-header">
+    <button class="hamburger">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+    <svg class="header-logo" viewBox="0 0 120 28" fill="none"><text x="0" y="20" font-family="Inter" font-size="16" font-weight="700" fill="#00244C">ARCTIC WOLF</text></svg>
+    <div class="sep"></div>
+    <span class="header-app-name">Unified Portal</span>
+    <div class="right">
+        <div class="customer-selector" id="customerSelector">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <span>Nexus Global Security</span>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div style="width:32px;height:32px;border-radius:50%;background:var(--aw-primary-main);display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;">SM</div>
+    </div>
+</header>
+
+<!-- ===================== LAYOUT ===================== -->
+<div class="aw-layout">
+
+<!-- ===================== SIDEBAR ===================== -->
+<nav class="aw-sidebar">
+    <div style="padding:8px;">
+        <div class="nav-section-label">OVERVIEW</div>
+        <div class="nav-item"><span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span><span class="nav-label">Home</span></div>
+        <div class="nav-item"><span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></span><span class="nav-label">Dashboard</span></div>
+
+        <div class="nav-section-label">DETECTION & RESPONSE</div>
+        <div class="nav-item active"><span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span><span class="nav-label">Detection Catalog</span></div>
+        <div class="sub-item">Security Alerts</div>
+        <div class="sub-item">Investigations</div>
+        <div class="sub-item">Response Actions</div>
+
+        <div class="nav-section-label">RISK</div>
+        <div class="nav-item"><span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span><span class="nav-label">Risk Dashboard</span></div>
+        <div class="nav-item"><span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></span><span class="nav-label">Assets</span></div>
+
+        <div class="nav-section-label">SETTINGS</div>
+        <div class="nav-item"><span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span><span class="nav-label">Integrations</span></div>
+    </div>
+</nav>
+
+<!-- ===================== MAIN CONTENT ===================== -->
+<main class="aw-content" id="mainContent">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div>
+            <div class="page-title">Detection Catalog</div>
+            <div style="font-size:13px;color:var(--aw-text-muted);margin-top:4px;">Coverage for your active integrations</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;">
+            <div style="font-size:12px;color:var(--aw-text-muted);display:flex;align-items:center;gap:6px;">
+                <span style="width:8px;height:8px;background:var(--aw-success-main);border-radius:50%;display:inline-block;animation:pulse 2s infinite;"></span>
+                Updated 2 hours ago
+            </div>
+        </div>
+    </div>
+
+    <!-- Stat Cards -->
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="accent blue"></div>
+            <div class="stat-label">Active Detections</div>
+            <div class="stat-value">1,247</div>
+        </div>
+        <div class="stat-card">
+            <div class="accent green"></div>
+            <div class="stat-label">Techniques Covered</div>
+            <div class="stat-value">316</div>
+        </div>
+        <div class="stat-card">
+            <div class="accent orange"></div>
+            <div class="stat-label">Your Integrations</div>
+            <div class="stat-value">8</div>
+        </div>
+        <div class="stat-card">
+            <div class="accent red"></div>
+            <div class="stat-label">Coverage Gaps</div>
+            <div class="stat-value">47</div>
+        </div>
+        <div class="stat-card">
+            <div class="accent purple"></div>
+            <div class="stat-label">CVE Coverage</div>
+            <div class="stat-value">847</div>
+        </div>
+    </div>
+
+    <!-- View Tabs -->
+    <div class="aw-tabs">
+        <button class="aw-tab active" data-tab="mitre">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+            MITRE ATT&CK Map
+            <span class="tab-count">14 tactics</span>
+        </button>
+        <button class="aw-tab" data-tab="table">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+            Detection Table
+            <span class="tab-count">1,247</span>
+        </button>
+        <button class="aw-tab" data-tab="vulns">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            Vulnerability Coverage
+            <span class="tab-count">847</span>
+        </button>
+    </div>
+
+    <!-- =================== MITRE MAP VIEW =================== -->
+    <div class="tab-panel active" id="panel-mitre">
+        <!-- Toolbar -->
+        <div class="toolbar">
+            <div class="search-wrap">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input class="toolbar-search" placeholder="Search techniques or detections..." id="mitreSearch">
+            </div>
+            <div class="filter-chips">
+                <span class="filter-chip active" data-filter="all">All</span>
+                <span class="filter-chip" data-filter="covered">Covered</span>
+                <span class="filter-chip" data-filter="gaps">Gaps</span>
+            </div>
+        </div>
+
+        <!-- Navigator Matrix -->
+        <div class="mitre-matrix-wrap">
+            <div class="mitre-matrix" id="mitreMatrix"></div>
+            <div class="matrix-legend">
+                <span style="font-weight:600;">Detection Depth:</span>
+                <div class="legend-item"><div class="legend-swatch" style="background:#f0f0f0;border:1px solid #ddd;"></div> None</div>
+                <div class="legend-item"><div class="legend-swatch" style="background:#c8e6c9;"></div> 1-5</div>
+                <div class="legend-item"><div class="legend-swatch" style="background:#81c784;"></div> 6-10</div>
+                <div class="legend-item"><div class="legend-swatch" style="background:#4caf50;"></div> 11-20</div>
+                <div class="legend-item"><div class="legend-swatch" style="background:#2e7d32;"></div> 21-30</div>
+                <div class="legend-item"><div class="legend-swatch" style="background:#1b5e20;"></div> 31+</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =================== TABLE VIEW =================== -->
+    <div class="tab-panel" id="panel-table">
+        <!-- Toolbar -->
+        <div class="toolbar">
+            <div class="search-wrap">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input class="toolbar-search" placeholder="Search detections by name, description, MITRE technique..." id="tableSearch">
+            </div>
+            <div class="filter-chips">
+                <span class="filter-chip active">All</span>
+                <span class="filter-chip">GA</span>
+                <span class="filter-chip">Beta</span>
+                <span class="filter-chip">Sigma</span>
+                <span class="filter-chip">Stateful</span>
+                <span class="filter-chip">Snort</span>
+                <span class="filter-chip">Batch</span>
+                <span class="filter-chip">Intention</span>
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div style="background:var(--aw-bg-paper);border-radius:12px;border:1px solid var(--aw-border);overflow:hidden;">
+            <table class="aw-table">
+                <thead>
+                    <tr>
+                        <th style="width:30%;">Detection</th>
+                        <th>Status</th>
+                        <th>Type</th>
+                        <th>Log Source</th>
+                        <th>MITRE Tactic</th>
+                        <th>Confidence</th>
+                        <th style="width:90px;">Added</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination">
+            <span>Showing 1-25 of 1,247 detections</span>
+            <div class="pagination-buttons">
+                <button class="pagination-btn">&laquo;</button>
+                <button class="pagination-btn active">1</button>
+                <button class="pagination-btn">2</button>
+                <button class="pagination-btn">3</button>
+                <button class="pagination-btn">...</button>
+                <button class="pagination-btn">50</button>
+                <button class="pagination-btn">&raquo;</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- =================== VULNERABILITY COVERAGE VIEW =================== -->
+    <div class="tab-panel" id="panel-vulns">
+        <!-- Search Panel -->
+        <div class="vuln-search-panel">
+            <h2>Vulnerability Catalog Search</h2>
+            <div class="vuln-search-row">
+                <div class="vuln-form-group" style="flex:1">
+                    <div class="vuln-form-label">Search</div>
+                    <input type="text" class="vuln-form-input" placeholder="CVE ID, vulnerability name, or keyword..." id="vulnSearch">
+                </div>
+                <div class="vuln-form-group">
+                    <div class="vuln-form-label">Category</div>
+                    <select class="vuln-form-select" id="vulnCategory">
+                        <option>All Categories</option>
+                        <option>Network</option>
+                        <option>Web Application</option>
+                        <option>Operating System</option>
+                        <option>Cloud Misconfiguration</option>
+                        <option>Identity & Access</option>
+                    </select>
+                </div>
+                <div class="vuln-form-group">
+                    <div class="vuln-form-label">Date Range</div>
+                    <div style="display:flex;gap:8px;align-items:center">
+                        <input type="date" class="vuln-form-input" value="2026-01-01">
+                        <span style="color:var(--aw-text-muted);font-size:12px;">to</span>
+                        <input type="date" class="vuln-form-input" value="2026-04-10">
+                    </div>
+                </div>
+                <button class="vuln-btn-primary">Search</button>
+                <button class="vuln-btn-outline">Reset</button>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="vuln-filter-row">
+            <select class="vuln-filter-select"><option>Select source</option><option>IVA</option><option>Agent</option><option>EVA</option><option>CloudSploit</option></select>
+            <select class="vuln-filter-select"><option>Select severity</option><option>Critical</option><option>High</option><option>Medium</option><option>Low</option></select>
+            <select class="vuln-filter-select"><option>Select platform</option><option>Windows</option><option>Linux</option><option>macOS</option><option>Cross-platform</option><option>AWS</option><option>Azure</option><option>GCP</option></select>
+            <select class="vuln-filter-select"><option>Detection status</option><option>Has Detection</option><option>No Detection</option></select>
+            <a class="vuln-clear-link">Clear Filters</a>
+        </div>
+
+        <!-- Results Header -->
+        <div class="vuln-results-header">
+            <h2>Vulnerability Coverage Results</h2>
+            <span class="vuln-count" id="vulnCount">Showing 12 of 847 vulnerabilities</span>
+        </div>
+
+        <!-- Results Table -->
+        <div style="background:var(--aw-bg-paper);border-radius:12px;border:1px solid var(--aw-border);overflow:hidden;">
+            <table class="aw-table">
+                <thead>
+                    <tr>
+                        <th style="width:30%;">Vulnerability</th>
+                        <th>CVE</th>
+                        <th>Source</th>
+                        <th>Platform</th>
+                        <th>Severity</th>
+                        <th>CVSS</th>
+                        <th>Detection</th>
+                        <th style="width:80px;">Published</th>
+                    </tr>
+                </thead>
+                <tbody id="vulnTableBody"></tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination">
+            <span>Showing 1-12 of 847 vulnerabilities with detection coverage</span>
+            <div class="pagination-buttons">
+                <button class="pagination-btn">&laquo;</button>
+                <button class="pagination-btn active">1</button>
+                <button class="pagination-btn">2</button>
+                <button class="pagination-btn">3</button>
+                <button class="pagination-btn">...</button>
+                <button class="pagination-btn">71</button>
+                <button class="pagination-btn">&raquo;</button>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- ===================== DETAIL SHELF ===================== -->
+<aside class="detail-shelf" id="detailShelf">
+    <div class="shelf-header">
+        <span class="shelf-title" id="shelfTitle">Detection Details</span>
+        <div class="view-toggle" id="viewToggle">
+            <button class="view-toggle-btn active" data-view="external">External</button>
+            <button class="view-toggle-btn" data-view="internal">Internal</button>
+        </div>
+        <button class="shelf-close" id="shelfClose" style="margin-left:12px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+    </div>
+    <div class="shelf-body" id="shelfBody">
+        <div class="empty-shelf">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            <div class="empty-text">Select a detection</div>
+            <div class="empty-hint">Click any detection or technique to view details</div>
+        </div>
+    </div>
+</aside>
+
+</div><!-- /aw-layout -->
+
+<style>@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }</style>
+
+<script>
+// ===================== MOCK DATA =====================
+const TACTICS = [
+    { id: 'TA0043', name: 'Reconnaissance', techniques: [
+        { id: 'T1595', name: 'Active Scanning', count: 8 },
+        { id: 'T1592', name: 'Gather Victim Host Info', count: 3 },
+        { id: 'T1589', name: 'Gather Victim Identity Info', count: 5 },
+        { id: 'T1590', name: 'Gather Victim Network Info', count: 4 },
+        { id: 'T1591', name: 'Gather Victim Org Info', count: 0 },
+    ]},
+    { id: 'TA0042', name: 'Resource Development', techniques: [
+        { id: 'T1583', name: 'Acquire Infrastructure', count: 2 },
+        { id: 'T1586', name: 'Compromise Accounts', count: 6 },
+        { id: 'T1584', name: 'Compromise Infrastructure', count: 3 },
+        { id: 'T1587', name: 'Develop Capabilities', count: 0 },
+        { id: 'T1585', name: 'Establish Accounts', count: 4 },
+    ]},
+    { id: 'TA0001', name: 'Initial Access', techniques: [
+        { id: 'T1189', name: 'Drive-by Compromise', count: 12 },
+        { id: 'T1190', name: 'Exploit Public-Facing App', count: 18 },
+        { id: 'T1133', name: 'External Remote Services', count: 15 },
+        { id: 'T1566', name: 'Phishing', count: 24 },
+        { id: 'T1078', name: 'Valid Accounts', count: 31 },
+        { id: 'T1199', name: 'Trusted Relationship', count: 7 },
+    ]},
+    { id: 'TA0002', name: 'Execution', techniques: [
+        { id: 'T1059', name: 'Command & Scripting Interpreter', count: 42 },
+        { id: 'T1203', name: 'Exploitation for Client Execution', count: 9 },
+        { id: 'T1047', name: 'WMI', count: 14 },
+        { id: 'T1053', name: 'Scheduled Task/Job', count: 19 },
+        { id: 'T1204', name: 'User Execution', count: 11 },
+        { id: 'T1569', name: 'System Services', count: 8 },
+    ]},
+    { id: 'TA0003', name: 'Persistence', techniques: [
+        { id: 'T1098', name: 'Account Manipulation', count: 16 },
+        { id: 'T1547', name: 'Boot or Logon Autostart', count: 22 },
+        { id: 'T1136', name: 'Create Account', count: 18 },
+        { id: 'T1543', name: 'Create or Modify System Process', count: 12 },
+        { id: 'T1546', name: 'Event Triggered Execution', count: 9 },
+        { id: 'T1053.005', name: 'Scheduled Task', count: 14 },
+    ]},
+    { id: 'TA0004', name: 'Privilege Escalation', techniques: [
+        { id: 'T1548', name: 'Abuse Elevation Control', count: 11 },
+        { id: 'T1134', name: 'Access Token Manipulation', count: 8 },
+        { id: 'T1068', name: 'Exploitation for Privilege Escalation', count: 6 },
+        { id: 'T1078', name: 'Valid Accounts', count: 31 },
+        { id: 'T1055', name: 'Process Injection', count: 15 },
+    ]},
+    { id: 'TA0005', name: 'Defense Evasion', techniques: [
+        { id: 'T1070', name: 'Indicator Removal', count: 19 },
+        { id: 'T1036', name: 'Masquerading', count: 23 },
+        { id: 'T1027', name: 'Obfuscated Files or Info', count: 17 },
+        { id: 'T1562', name: 'Impair Defenses', count: 21 },
+        { id: 'T1218', name: 'System Binary Proxy Execution', count: 28 },
+        { id: 'T1112', name: 'Modify Registry', count: 14 },
+        { id: 'T1055', name: 'Process Injection', count: 15 },
+    ]},
+    { id: 'TA0006', name: 'Credential Access', techniques: [
+        { id: 'T1110', name: 'Brute Force', count: 26 },
+        { id: 'T1003', name: 'OS Credential Dumping', count: 34 },
+        { id: 'T1558', name: 'Steal or Forge Kerberos Tickets', count: 12 },
+        { id: 'T1552', name: 'Unsecured Credentials', count: 9 },
+        { id: 'T1556', name: 'Modify Authentication Process', count: 7 },
+    ]},
+    { id: 'TA0007', name: 'Discovery', techniques: [
+        { id: 'T1087', name: 'Account Discovery', count: 18 },
+        { id: 'T1482', name: 'Domain Trust Discovery', count: 8 },
+        { id: 'T1046', name: 'Network Service Discovery', count: 11 },
+        { id: 'T1057', name: 'Process Discovery', count: 6 },
+        { id: 'T1018', name: 'Remote System Discovery', count: 9 },
+        { id: 'T1083', name: 'File and Directory Discovery', count: 5 },
+    ]},
+    { id: 'TA0008', name: 'Lateral Movement', techniques: [
+        { id: 'T1021', name: 'Remote Services', count: 22 },
+        { id: 'T1570', name: 'Lateral Tool Transfer', count: 8 },
+        { id: 'T1563', name: 'Remote Service Session Hijacking', count: 4 },
+        { id: 'T1091', name: 'Replication Through Removable Media', count: 0 },
+    ]},
+    { id: 'TA0009', name: 'Collection', techniques: [
+        { id: 'T1560', name: 'Archive Collected Data', count: 7 },
+        { id: 'T1005', name: 'Data from Local System', count: 11 },
+        { id: 'T1114', name: 'Email Collection', count: 14 },
+        { id: 'T1119', name: 'Automated Collection', count: 5 },
+    ]},
+    { id: 'TA0011', name: 'Command and Control', techniques: [
+        { id: 'T1071', name: 'Application Layer Protocol', count: 19 },
+        { id: 'T1573', name: 'Encrypted Channel', count: 12 },
+        { id: 'T1105', name: 'Ingress Tool Transfer', count: 16 },
+        { id: 'T1571', name: 'Non-Standard Port', count: 8 },
+        { id: 'T1572', name: 'Protocol Tunneling', count: 6 },
+        { id: 'T1568', name: 'Dynamic Resolution (DGA)', count: 10 },
+    ]},
+    { id: 'TA0010', name: 'Exfiltration', techniques: [
+        { id: 'T1041', name: 'Exfiltration Over C2 Channel', count: 9 },
+        { id: 'T1567', name: 'Exfiltration Over Web Service', count: 13 },
+        { id: 'T1048', name: 'Exfiltration Over Alternative Protocol', count: 7 },
+        { id: 'T1020', name: 'Automated Exfiltration', count: 0 },
+    ]},
+    { id: 'TA0040', name: 'Impact', techniques: [
+        { id: 'T1486', name: 'Data Encrypted for Impact', count: 11 },
+        { id: 'T1489', name: 'Service Stop', count: 8 },
+        { id: 'T1490', name: 'Inhibit System Recovery', count: 6 },
+        { id: 'T1531', name: 'Account Access Removal', count: 4 },
+        { id: 'T1499', name: 'Endpoint Denial of Service', count: 3 },
+    ]},
+];
+
+const MOCK_DETECTIONS = [
+    { id: 'd001', name: 'Suspicious PowerShell Encoded Command Execution', displayName: 'Encoded PowerShell Command Detected', status: 'ga', type: 'sigma', logSource: 'Windows Security', tactic: 'Execution', technique: 'T1059', confidence: 'High', added: '2026-03-15', isNew: true,
+      internalName: 's40_escalate_sigma_awrules_winsecurity.sigma_Security_encoded_ps', source: 'https://github.com/rtkwlf/sigma/blob/awn/rules/windows/powershell_encoded.yml', scope: 'observation/awn-agent', tags: ['sigma', 'aw.defined', 'sigma-pagerduty'], parserName: 'awn-agent', content: 'title: Suspicious PowerShell Encoded Command\nstatus: stable\nlogsource:\n    category: process_creation\n    product: windows\ndetection:\n    selection:\n        CommandLine|contains:\n            - \"-EncodedCommand\"\n            - \"-enc \"\n            - \"-e JAB\"\n        Image|endswith: \\powershell.exe\n    condition: selection\nlevel: high',
+      aiSummary: 'This detection identifies PowerShell processes launched with Base64-encoded commands, a technique frequently used by threat actors to obfuscate malicious scripts. Encoded commands are commonly seen in fileless malware, post-exploitation frameworks like Cobalt Strike, and living-off-the-land attacks. When this fires, the executing user and decoded command content should be investigated for indicators of compromise.',
+      reasoning: 'High confidence MITRE mapping. The detection directly targets T1059.001 (PowerShell) through command-line argument matching. The encoded command flag is a well-documented adversary technique with minimal legitimate use in production environments.' },
+    { id: 'd002', name: 'Brute Force Authentication Attempts Detected', displayName: 'Brute Force Login Attempts', status: 'ga', type: 'sigma', logSource: 'Azure AD', tactic: 'Credential Access', technique: 'T1110', confidence: 'High', added: '2025-12-01', isNew: false,
+      internalName: 's40_escalate_sigma_awrules_azuread.sigma_bruteforce', source: 'https://github.com/rtkwlf/sigma/blob/awn/rules/cloud/azure_bruteforce.yml', scope: 'observation/exlog-azuread', tags: ['sigma', 'aw.defined'], parserName: 'exlog-azuread-parser', content: 'title: Azure AD Brute Force\nlogsource:\n    product: azure\n    service: signinlogs\ndetection:\n    selection:\n        ResultType: 50126\n    timeframe: 5m\n    condition: selection | count(TargetUserPrincipalName) > 10\nlevel: high',
+      aiSummary: 'Detects multiple failed authentication attempts against Azure Active Directory within a short time window, indicating a potential brute force or password spraying attack. This pattern is commonly associated with initial access attempts targeting cloud identity providers.',
+      reasoning: 'Direct mapping to T1110 (Brute Force). The threshold-based detection on failed sign-in events with ResultType 50126 is a standard brute force indicator.' },
+    { id: 'd003', name: 'Lateral Movement via Remote Desktop Protocol', displayName: 'Unusual RDP Session Activity', status: 'ga', type: 'stateful_rule', logSource: 'Windows Security', tactic: 'Lateral Movement', technique: 'T1021', confidence: 'High', added: '2026-01-20', isNew: false,
+      internalName: 'sr_lateral_rdp_unusual_session', source: 'internal://stateful-rules/lateral_rdp', scope: 'observation/awn-agent', tags: ['stateful', 'aw.defined', 'lateral-movement'], parserName: 'awn-agent', content: 'rule: stateful_rdp_lateral\ncondition:\n  - event_id: 4624\n    logon_type: 10\n    source_ip: !internal_baseline\n  - within: 1h\n    count: >= 3\n    distinct: target_host',
+      aiSummary: 'Identifies unusual Remote Desktop Protocol (RDP) sessions originating from hosts not typically associated with RDP activity. Multiple RDP connections to different hosts within a short timeframe may indicate an adversary moving laterally through the network after gaining initial access.',
+      reasoning: 'Maps to T1021.001 (Remote Desktop Protocol). Stateful correlation of logon events with type 10 (RDP) from non-baseline sources across multiple targets is a strong lateral movement indicator.' },
+    { id: 'd004', name: 'Suspicious Curl File Upload Activity', displayName: 'Potential Data Upload via Curl', status: 'ga', type: 'sigma', logSource: 'Linux Agent', tactic: 'Exfiltration', technique: 'T1567', confidence: 'Medium', added: '2026-02-10', isNew: false,
+      internalName: 's40_escalate_sigma_sigmahqold_linux.sigma_linux_curl_upload', source: 'https://github.com/rtkwlf/sigma/blob/awn/rules/linux/proc_creation_lnx_susp_curl_fileupload.yml', scope: 'observation/awn-agent', tags: ['sigma'], parserName: 'awn-agent', content: 'title: Suspicious Curl File Upload\ncondition: selection\nselection:\n    CommandLine|contains:\n        - \" -F \"\n        - \" --form\"\n        - \" -T \"\n        - \" --upload-file \"\n    Image|endswith: /curl',
+      aiSummary: 'Detects curl commands that include file upload flags, which may indicate data exfiltration to an external web service. While curl uploads have legitimate uses in CI/CD pipelines, unexpected file uploads from production servers warrant investigation.',
+      reasoning: 'Medium confidence. Maps to T1567 (Exfiltration Over Web Service) and T1105 (Ingress Tool Transfer). Curl upload flags are dual-use -- common in developer workflows but also used for exfiltration.' },
+    { id: 'd005', name: 'LSASS Memory Access for Credential Dumping', displayName: 'Credential Dumping Attempt (LSASS)', status: 'ga', type: 'sigma', logSource: 'Windows Security', tactic: 'Credential Access', technique: 'T1003', confidence: 'High', added: '2025-11-05', isNew: false,
+      internalName: 's40_escalate_sigma_awrules_winsecurity.sigma_lsass_access', source: 'https://github.com/rtkwlf/sigma/blob/awn/rules/windows/sysmon_lsass_access.yml', scope: 'observation/awn-agent', tags: ['sigma', 'aw.defined', 'sigma-pagerduty', 'credential-access'], parserName: 'awn-agent', content: 'title: LSASS Memory Access\nlogsource:\n    category: process_access\n    product: windows\ndetection:\n    selection:\n        TargetImage|endswith: \\lsass.exe\n        GrantedAccess|contains:\n            - \"0x1010\"\n            - \"0x1038\"\n    filter:\n        SourceImage|endswith:\n            - \\wmiprvse.exe\n            - \\taskmgr.exe\n    condition: selection and not filter\nlevel: critical',
+      aiSummary: 'Detects attempts to access the LSASS (Local Security Authority Subsystem Service) process memory, a critical indicator of credential dumping tools such as Mimikatz, ProcDump, or comsvcs.dll. LSASS stores authentication credentials in memory, making it a prime target for attackers seeking to harvest passwords and Kerberos tickets for lateral movement.',
+      reasoning: 'High confidence. Direct mapping to T1003.001 (LSASS Memory). The specific GrantedAccess values (0x1010, 0x1038) are well-documented Mimikatz indicators. Critical severity.' },
+    { id: 'd006', name: 'Phishing Email with Malicious Attachment', displayName: 'Malicious Email Attachment Detected', status: 'ga', type: 'sigma', logSource: 'Office 365', tactic: 'Initial Access', technique: 'T1566', confidence: 'High', added: '2026-04-01', isNew: true,
+      internalName: 's40_escalate_sigma_awrules_o365.sigma_phishing_attachment', source: 'https://github.com/rtkwlf/sigma/blob/awn/rules/cloud/o365_phishing.yml', scope: 'observation/exlog-o365', tags: ['sigma', 'aw.defined', 'phishing'], parserName: 'exlog-o365-parser', content: 'title: O365 Phishing Attachment\nlogsource:\n    product: m365\n    service: defender\ndetection:\n    selection:\n        Operation: \"ThreatFound\"\n        ThreatType|contains: \"Phish\"\n    condition: selection',
+      aiSummary: 'Identifies emails flagged by Microsoft Defender for Office 365 as containing phishing content with malicious attachments. These emails have been automatically quarantined or flagged. Investigation should focus on whether any recipients interacted with the attachment before it was caught.',
+      reasoning: 'Direct mapping to T1566.001 (Spearphishing Attachment). Microsoft Defender ThreatFound events with Phish classification are authoritative phishing indicators.' },
+    { id: 'd007', name: 'DGA Domain Communication Detected', displayName: 'Algorithmically Generated Domain Activity', status: 'beta', type: 'intention', logSource: 'DNS Logs', tactic: 'Command and Control', technique: 'T1568', confidence: 'Medium', added: '2026-03-28', isNew: true,
+      internalName: 'intention_dga_detection_v2', source: 'internal://intentions/dga_v2', scope: 'observation/dns-flow', tags: ['intention', 'aw.defined', 'dns', 'c2'], parserName: 'dns-flow-parser', content: 'type: intention\nname: DGA Domain Detection v2\ncondition:\n    shannon_entropy: > 4.2\n    domain_length: > 15\n    not_in: whitelist_domains\n    query_count: > 5\n    timeframe: 1h',
+      aiSummary: 'Detects DNS queries to domains exhibiting characteristics of Domain Generation Algorithms (DGA), commonly used by malware to dynamically generate command-and-control domains. The detection uses Shannon entropy scoring above 4.2 combined with domain length and query frequency analysis to identify suspicious algorithmically generated domain names.',
+      reasoning: 'Medium confidence. Maps to T1568.002 (Domain Generation Algorithms). Shannon entropy is a probabilistic indicator -- some legitimate domains (CDN subdomains, cloud services) can score above 4.2. The multi-factor approach (entropy + length + frequency) improves specificity.' },
+    { id: 'd008', name: 'Ransomware File Encryption Activity', displayName: 'Potential Ransomware Encryption Detected', status: 'ga', type: 'sigma', logSource: 'Windows Security', tactic: 'Impact', technique: 'T1486', confidence: 'High', added: '2025-10-15', isNew: false,
+      internalName: 's40_escalate_sigma_awrules_winsecurity.sigma_ransomware_encrypt', source: 'https://github.com/rtkwlf/sigma/blob/awn/rules/windows/sysmon_ransomware_rename.yml', scope: 'observation/awn-agent', tags: ['sigma', 'aw.defined', 'sigma-pagerduty', 'ransomware'], parserName: 'awn-agent', content: 'title: Ransomware File Rename Activity\nlogsource:\n    category: file_rename\n    product: windows\ndetection:\n    selection:\n        TargetFilename|endswith:\n            - .encrypted\n            - .locked\n            - .crypted\n            - .crypt\n    timeframe: 5m\n    condition: selection | count() > 50\nlevel: critical',
+      aiSummary: 'Detects mass file renaming operations with encryption-related extensions, a hallmark of ransomware execution. When more than 50 files are renamed with known ransomware extensions within 5 minutes, this strongly indicates active encryption. Immediate containment actions should be initiated.',
+      reasoning: 'High confidence. Direct mapping to T1486 (Data Encrypted for Impact). Mass file rename with crypto extensions and time-bounded threshold is a definitive ransomware indicator. Critical severity.' },
+
+    // --- Snort Detections ---
+    { id: 'd009', name: 'ET SCAN SSH Brute Force Attempt', displayName: 'SSH Brute Force Network Detection', status: 'ga', type: 'snort', logSource: 'Network Sensor', tactic: 'Credential Access', technique: 'T1110', confidence: 'High', added: '2026-04-05', isNew: true,
+      internalName: 'snort_et_scan_ssh_bruteforce', source: 'https://rules.emergingthreats.net/open/suricata/rules/emerging-scan.rules', scope: 'observation/network-sensor', tags: ['snort', 'emerging-threats', 'scan', 'ssh'], parserName: 'suricata-eve',
+      snortSid: 2001219, snortClassification: 'Attempted Administrator Privilege Gain', snortPriority: 1, snortReferences: ['cve:2024-6387', 'url:attack.mitre.org/techniques/T1110'],
+      content: 'alert tcp $EXTERNAL_NET any -> $HOME_NET 22 (\n    msg:"ET SCAN SSH Brute Force Attempt";\n    flow:to_server,established;\n    content:"SSH-";\n    threshold: type both, track by_src, count 5, seconds 60;\n    classtype:attempted-admin;\n    sid:2001219; rev:12;\n)',
+      aiSummary: 'Network-level detection of SSH brute force attempts using Suricata/Snort signatures from the Emerging Threats ruleset. Triggers when 5 or more SSH connection attempts from the same source IP are observed within 60 seconds, indicating automated credential guessing against SSH services. This provides network-layer visibility complementing host-based authentication log detections.',
+      reasoning: 'High confidence. Direct mapping to T1110.001 (Password Guessing). Threshold-based detection of repeated SSH handshakes from a single source is a well-established brute force indicator at the network layer.' },
+    { id: 'd010', name: 'ET WEB_SERVER SQL Injection Attempt - SELECT', displayName: 'SQL Injection Attack Detected (Network)', status: 'ga', type: 'snort', logSource: 'Network Sensor', tactic: 'Initial Access', technique: 'T1190', confidence: 'High', added: '2026-03-20', isNew: false,
+      internalName: 'snort_et_web_sqli_select', source: 'https://rules.emergingthreats.net/open/suricata/rules/emerging-web_server.rules', scope: 'observation/network-sensor', tags: ['snort', 'emerging-threats', 'web-server', 'sqli'], parserName: 'suricata-eve',
+      snortSid: 2006446, snortClassification: 'Web Application Attack', snortPriority: 1, snortReferences: ['url:owasp.org/www-community/attacks/SQL_Injection', 'cve:2023-34362'],
+      content: 'alert http $EXTERNAL_NET any -> $HTTP_SERVERS $HTTP_PORTS (\n    msg:"ET WEB_SERVER SQL Injection Attempt - SELECT";\n    flow:to_server,established;\n    http.uri;\n    content:"SELECT"; nocase;\n    content:"FROM"; nocase; distance:0;\n    content:"WHERE"; nocase; distance:0;\n    pcre:"/(?:UNION\\s+(?:ALL\\s+)?SELECT|SELECT.*FROM.*WHERE)/Ui";\n    classtype:web-application-attack;\n    sid:2006446; rev:18;\n)',
+      aiSummary: 'Detects SQL injection attempts in HTTP traffic targeting web application servers. The signature identifies common SQL injection patterns including UNION SELECT and SELECT FROM WHERE constructs in URI parameters. This network-layer detection catches attacks regardless of the web application framework, providing defense-in-depth alongside application-level WAF rules.',
+      reasoning: 'High confidence. Direct mapping to T1190 (Exploit Public-Facing Application). SQL injection via HTTP URI is a well-documented web attack vector. The PCRE pattern reduces false positives by requiring structured SQL syntax.' },
+    { id: 'd011', name: 'ET DNS Query to Suspicious TLD (Possible C2)', displayName: 'Suspicious DNS Query to Uncommon TLD', status: 'beta', type: 'snort', logSource: 'Network Sensor', tactic: 'Command and Control', technique: 'T1071', confidence: 'Medium', added: '2026-04-08', isNew: true,
+      internalName: 'snort_et_dns_suspicious_tld', source: 'https://rules.emergingthreats.net/open/suricata/rules/emerging-dns.rules', scope: 'observation/network-sensor', tags: ['snort', 'emerging-threats', 'dns', 'c2'], parserName: 'suricata-eve',
+      snortSid: 2027863, snortClassification: 'Potentially Bad Traffic', snortPriority: 2, snortReferences: ['url:attack.mitre.org/techniques/T1071/004'],
+      content: 'alert dns $HOME_NET any -> any any (\n    msg:"ET DNS Query to Suspicious TLD - Possible C2";\n    dns.query;\n    content:".top"; nocase; endswith;\n    threshold: type both, track by_src, count 10, seconds 300;\n    classtype:bad-unknown;\n    sid:2027863; rev:5;\n)',
+      aiSummary: 'Identifies DNS queries to suspicious top-level domains frequently associated with command-and-control infrastructure and malicious hosting. This detection triggers when a host makes 10 or more DNS queries to .top TLD domains within 5 minutes, which may indicate malware beaconing or C2 communication. The .top TLD has been consistently ranked among the most abused TLDs by threat actors.',
+      reasoning: 'Medium confidence. Maps to T1071.004 (Application Layer Protocol: DNS). TLD-based filtering has inherent false positive risk from legitimate .top domains, but the threshold-based approach (10 queries in 5 minutes from same source) significantly reduces noise.' },
+];
+
+const MOCK_VULNERABILITIES = [
+    { id: 'v001', cve: 'CVE-2024-6387', name: 'OpenSSH regreSSHion Remote Code Execution', source: 'IVA', platform: 'Linux', severity: 'Critical', cvss: 9.8, published: 'Apr 8, 2026', hasDetection: true, detectionIds: ['d009'],
+      description: 'A signal handler race condition in OpenSSH server (sshd) allows unauthenticated remote code execution as root on glibc-based Linux systems. This vulnerability affects OpenSSH versions 8.5p1 through 9.7p1.',
+      remediation: 'Update OpenSSH to version 9.8p1 or later. As a temporary mitigation, set LoginGraceTime to 0 in sshd_config (WARNING: this makes sshd vulnerable to denial of service).',
+      affectedProducts: ['OpenSSH 8.5p1-9.7p1', 'Ubuntu 22.04/24.04', 'RHEL 8/9', 'Debian 11/12'] },
+    { id: 'v002', cve: 'CVE-2023-34362', name: 'MOVEit Transfer SQL Injection', source: 'IVA', platform: 'Windows', severity: 'Critical', cvss: 9.8, published: 'Apr 5, 2026', hasDetection: true, detectionIds: ['d010'],
+      description: 'A SQL injection vulnerability in MOVEit Transfer web application allows unauthenticated attackers to gain access to the MOVEit Transfer database and execute arbitrary code. Actively exploited by Cl0p ransomware group.',
+      remediation: 'Apply Progress MOVEit Transfer patches immediately. Block all HTTP/HTTPS traffic to the MOVEit Transfer environment until patched.',
+      affectedProducts: ['MOVEit Transfer 2021.0-2023.0.2', 'MOVEit Cloud'] },
+    { id: 'v003', cve: 'CVE-2024-3400', name: 'Palo Alto PAN-OS GlobalProtect Command Injection', source: 'EVA', platform: 'Network', severity: 'Critical', cvss: 10.0, published: 'Apr 3, 2026', hasDetection: false, detectionIds: [],
+      description: 'A command injection vulnerability in the GlobalProtect feature of Palo Alto Networks PAN-OS allows unauthenticated attackers to execute arbitrary code with root privileges on the firewall.',
+      remediation: 'Update PAN-OS to fixed versions. Apply Threat Prevention signatures. Disable GlobalProtect telemetry if immediate patching is not possible.',
+      affectedProducts: ['PAN-OS 10.2', 'PAN-OS 11.0', 'PAN-OS 11.1'] },
+    { id: 'v004', cve: 'CVE-2021-44228', name: 'Apache Log4j2 RCE via JNDI Lookup (Log4Shell)', source: 'IVA', platform: 'Cross-platform', severity: 'Critical', cvss: 10.0, published: 'Mar 28, 2026', hasDetection: true, detectionIds: ['d001', 'd010'],
+      description: 'Apache Log4j2 versions 2.0-beta9 through 2.14.1 are vulnerable to a remote code execution attack through JNDI lookup features. An attacker who can control log message content can execute arbitrary code loaded from LDAP servers.',
+      remediation: 'Update to Log4j 2.17.1 or later. Remove JndiLookup class from classpath. Set log4j2.formatMsgNoLookups=true.',
+      affectedProducts: ['Apache Log4j 2.0-beta9 to 2.14.1', 'Spring Boot', 'Apache Solr', 'Apache Struts 2'] },
+    { id: 'v005', cve: 'CVE-2024-21762', name: 'Fortinet FortiOS Out-of-Bound Write', source: 'EVA', platform: 'Network', severity: 'Critical', cvss: 9.6, published: 'Mar 25, 2026', hasDetection: false, detectionIds: [],
+      description: 'A out-of-bound write vulnerability in FortiOS SSL-VPN may allow a remote unauthenticated attacker to execute arbitrary code via specially crafted HTTP requests. CISA has confirmed active exploitation.',
+      remediation: 'Upgrade FortiOS to patched versions. Disable SSL-VPN if immediate patching is not possible.',
+      affectedProducts: ['FortiOS 7.4.0-7.4.2', 'FortiOS 7.2.0-7.2.6', 'FortiOS 7.0.0-7.0.13'] },
+    { id: 'v006', cve: 'CVE-2023-44487', name: 'HTTP/2 Rapid Reset Attack (DDoS)', source: 'Agent', platform: 'Cross-platform', severity: 'High', cvss: 7.5, published: 'Mar 20, 2026', hasDetection: true, detectionIds: ['d011'],
+      description: 'The HTTP/2 protocol allows a denial of service (server resource consumption) because request cancellation can reset many streams quickly, impacting all major web servers and cloud providers.',
+      remediation: 'Update web server software. Implement HTTP/2 rate limiting. Configure connection limits per client.',
+      affectedProducts: ['nginx', 'Apache HTTPD', 'Node.js', 'Go net/http', 'IIS'] },
+    { id: 'v007', cve: 'CVE-2024-0204', name: 'GoAnywhere MFT Authentication Bypass', source: 'IVA', platform: 'Cross-platform', severity: 'Critical', cvss: 9.8, published: 'Mar 15, 2026', hasDetection: true, detectionIds: ['d010'],
+      description: 'An authentication bypass in Fortra GoAnywhere MFT allows an unauthorized user to create an admin user via the administration portal. Actively exploited by ransomware groups.',
+      remediation: 'Update to GoAnywhere MFT 7.4.1 or later. Delete the InitialAccountSetup.xhtml file as a temporary workaround.',
+      affectedProducts: ['GoAnywhere MFT 6.x', 'GoAnywhere MFT 7.0-7.4.0'] },
+    { id: 'v008', cve: 'CVE-2024-1709', name: 'ConnectWise ScreenConnect Authentication Bypass', source: 'EVA', platform: 'Windows', severity: 'Critical', cvss: 10.0, published: 'Mar 10, 2026', hasDetection: true, detectionIds: ['d003'],
+      description: 'An authentication bypass vulnerability in ConnectWise ScreenConnect allows an attacker to bypass authentication and gain administrative access. This has been mass-exploited in the wild.',
+      remediation: 'Update ScreenConnect to version 23.9.8 or later immediately. Block access to the ScreenConnect setup wizard.',
+      affectedProducts: ['ConnectWise ScreenConnect < 23.9.8'] },
+    { id: 'v009', cve: 'CVE-2023-36884', name: 'Microsoft Office HTML RCE via Storm-0978', source: 'Agent', platform: 'Windows', severity: 'High', cvss: 8.8, published: 'Mar 5, 2026', hasDetection: true, detectionIds: ['d001', 'd006'],
+      description: 'Microsoft identified a phishing campaign by the threat actor Storm-0978 targeting defense and government entities using Windows and Office HTML remote code execution vulnerabilities.',
+      remediation: 'Install Microsoft security updates. Set FEATURE_BLOCK_CROSS_PROTOCOL_FILE_NAVIGATION registry key. Use Microsoft Defender for Office 365 Safe Attachments.',
+      affectedProducts: ['Microsoft Office 2019', 'Microsoft 365 Apps', 'Windows 10/11'] },
+    { id: 'v010', cve: 'CVE-2024-23897', name: 'Jenkins Arbitrary File Read', source: 'IVA', platform: 'Cross-platform', severity: 'Critical', cvss: 9.8, published: 'Feb 28, 2026', hasDetection: false, detectionIds: [],
+      description: 'Jenkins CLI uses args4j to parse command arguments and has a feature that replaces file path arguments with the file content. This allows unauthenticated attackers to read arbitrary files on the Jenkins controller file system.',
+      remediation: 'Update Jenkins to 2.442 or LTS 2.426.3. Disable the CLI if not needed.',
+      affectedProducts: ['Jenkins < 2.442', 'Jenkins LTS < 2.426.3'] },
+    { id: 'v011', cve: 'CVE-2024-27198', name: 'JetBrains TeamCity Authentication Bypass', source: 'IVA', platform: 'Cross-platform', severity: 'Critical', cvss: 9.8, published: 'Feb 20, 2026', hasDetection: true, detectionIds: ['d001'],
+      description: 'An authentication bypass vulnerability in JetBrains TeamCity before 2023.11.4 allows a remote unauthenticated attacker to take complete control of the TeamCity server including creating admin accounts.',
+      remediation: 'Update TeamCity to version 2023.11.4 or later. Apply the security patch plugin if immediate update is not possible.',
+      affectedProducts: ['JetBrains TeamCity < 2023.11.4'] },
+    { id: 'v012', cve: 'CVE-2024-20353', name: 'Cisco ASA/FTD Persistent Local Code Execution', source: 'EVA', platform: 'Network', severity: 'High', cvss: 8.6, published: 'Feb 15, 2026', hasDetection: true, detectionIds: ['d009'],
+      description: 'A vulnerability in the management and VPN web servers for Cisco ASA and FTD allows an unauthenticated, remote attacker to cause the device to reload unexpectedly. Exploited by ArcaneDoor campaign.',
+      remediation: 'Apply Cisco security patches. Monitor for unusual device reloads and configuration changes.',
+      affectedProducts: ['Cisco ASA', 'Cisco Firepower Threat Defense'] },
+];
+
+// ===================== APP STATE =====================
+let currentView = 'external';
+let selectedDetection = null;
+let shelfOpen = false;
+
+// ===================== RENDER MITRE NAVIGATOR MATRIX =====================
+function getHeatLevel(count) {
+    if (count === 0) return 0;
+    if (count <= 5) return 1;
+    if (count <= 10) return 2;
+    if (count <= 20) return 3;
+    if (count <= 30) return 4;
+    return 5;
+}
+
+function renderMitreMap() {
+    const matrix = document.getElementById('mitreMatrix');
+
+    // Find the max number of techniques across all tactics to pad columns
+    const maxTechniques = Math.max(...TACTICS.map(t => t.techniques.length));
+
+    matrix.innerHTML = TACTICS.map(tactic => {
+        const totalDets = tactic.techniques.reduce((s, t) => s + t.count, 0);
+        const covered = tactic.techniques.filter(t => t.count > 0).length;
+        const pct = Math.round((covered / tactic.techniques.length) * 100);
+
+        // Pad with empty cells so all columns are the same height
+        const padCount = maxTechniques - tactic.techniques.length;
+
+        return `
+            <div class="tactic-col">
+                <div class="tactic-header-cell">
+                    <div class="tactic-name">${tactic.name}</div>
+                    <div class="tactic-id">${tactic.id}</div>
+                    <div class="tactic-stats">${covered}/${tactic.techniques.length} techniques -- ${totalDets} det.</div>
+                    <div class="tactic-bar"><div class="tactic-bar-fill" style="width:${pct}%"></div></div>
+                </div>
+                <div class="technique-cells">
+                    ${tactic.techniques.map(tech => `
+                        <div class="technique-cell">
+                            <div class="tech-box heat-${getHeatLevel(tech.count)}"
+                                 data-tactic="${tactic.id}" data-technique="${tech.id}"
+                                 onclick="selectTechnique('${tactic.id}','${tech.id}','${tech.name.replace(/'/g,"\\'")}',${tech.count})"
+                                 title="${tech.id} ${tech.name} (${tech.count} detections)">
+                                <div class="tech-id">${tech.id}</div>
+                                <div class="tech-name">${tech.name}</div>
+                                ${tech.count > 0 ? `<div class="tech-count-badge">${tech.count}</div>` : ''}
+                            </div>
+                        </div>
+                    `).join('')}
+                    ${Array(padCount).fill('<div class="technique-cell"><div class="empty-cell"></div></div>').join('')}
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// ===================== RENDER TABLE =====================
+function renderTable() {
+    const tbody = document.getElementById('tableBody');
+    tbody.innerHTML = MOCK_DETECTIONS.map(d => `
+        <tr data-id="${d.id}" onclick="selectDetectionRow('${d.id}')" class="${selectedDetection && selectedDetection.id === d.id ? 'selected' : ''}">
+            <td>
+                <div style="font-weight:500;">${d.displayName}${d.isNew ? '<span class="badge new-badge">NEW</span>' : ''}</div>
+                <div style="font-size:11px;color:var(--aw-text-muted);margin-top:2px;">${d.technique} -- ${d.tactic}</div>
+            </td>
+            <td><span class="badge ${d.status}">${d.status.toUpperCase()}</span></td>
+            <td style="font-size:12px;">${d.type}</td>
+            <td><span class="log-source-tag">${d.logSource}</span></td>
+            <td style="font-size:12px;">${d.tactic}</td>
+            <td><span class="badge ${d.confidence.toLowerCase()}">${d.confidence}</span></td>
+            <td style="font-size:12px;color:var(--aw-text-muted);">${d.added}</td>
+        </tr>
+    `).join('');
+}
+
+// ===================== SHELF RENDERING =====================
+function renderShelf(detection) {
+    const body = document.getElementById('shelfBody');
+    body.className = 'shelf-body' + (currentView === 'internal' ? ' internal' : '');
+    document.getElementById('shelfTitle', detection.displayName);
+
+    body.innerHTML = `
+        <!-- Status Row -->
+        <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+            <span class="badge ${detection.status}">${detection.status.toUpperCase()}</span>
+            <span class="badge ${detection.confidence.toLowerCase()}">${detection.confidence} Confidence</span>
+            ${detection.isNew ? '<span class="badge new-badge" style="font-size:10px;padding:3px 8px;">NEW</span>' : ''}
+            <span class="log-source-tag">${detection.logSource}</span>
+            <span style="font-size:11px;color:var(--aw-text-muted);display:flex;align-items:center;">Added ${detection.added}</span>
+        </div>
+
+        <!-- AI Summary -->
+        <div class="shelf-section">
+            <div class="ai-summary-box">
+                <div class="ai-label">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"/><path d="M12 6v6l4 2"/></svg>
+                    AI-Generated Summary
+                </div>
+                ${detection.aiSummary}
+            </div>
+        </div>
+
+        <!-- MITRE Mapping -->
+        <div class="shelf-section">
+            <div class="shelf-section-title">MITRE ATT&CK Mapping</div>
+            <div style="display:flex;flex-wrap:wrap;gap:4px;">
+                <span class="mitre-tag">${detection.technique} -- ${getTechniqueName(detection.technique)}</span>
+                <span class="mitre-tag" style="background:rgba(var(--aw-success-rgb),var(--aw-tint-opacity));color:var(--aw-success-main);">${detection.tactic}</span>
+            </div>
+        </div>
+
+        <!-- Detection Details -->
+        <div class="shelf-section">
+            <div class="shelf-section-title">Detection Information</div>
+            <div class="shelf-field">
+                <div class="shelf-field-label">Detection Type</div>
+                <div class="shelf-field-value">${detection.type}</div>
+            </div>
+            <div class="shelf-field">
+                <div class="shelf-field-label">Log Source</div>
+                <div class="shelf-field-value">${detection.logSource}</div>
+            </div>
+        </div>
+
+        <!-- Snort/Suricata Details (visible in both views for snort type) -->
+        ${detection.type === 'snort' ? `
+        <div class="shelf-section">
+            <div class="shelf-section-title">Snort / Suricata Rule Details</div>
+            <div class="shelf-field">
+                <div class="shelf-field-label">Rule SID</div>
+                <div class="shelf-field-value mono" style="font-size:15px;font-weight:600;">${detection.snortSid}</div>
+            </div>
+            <div class="shelf-field">
+                <div class="shelf-field-label">Classification</div>
+                <div class="shelf-field-value">${detection.snortClassification}</div>
+            </div>
+            <div class="shelf-field">
+                <div class="shelf-field-label">Priority</div>
+                <div class="shelf-field-value">
+                    <span class="badge ${detection.snortPriority === 1 ? 'ga' : 'beta'}" style="font-size:10px;">Priority ${detection.snortPriority}</span>
+                </div>
+            </div>
+            ${detection.snortReferences ? `
+            <div class="shelf-field">
+                <div class="shelf-field-label">References</div>
+                <div style="display:flex;flex-wrap:wrap;gap:4px;">
+                    ${detection.snortReferences.map(r => `<span class="log-source-tag">${r}</span>`).join('')}
+                </div>
+            </div>` : ''}
+        </div>
+        ` : ''}
+
+        <!-- Linked Vulnerabilities -->
+        ${(() => {
+            const linkedVulns = MOCK_VULNERABILITIES.filter(v => v.detectionIds.includes(detection.id));
+            if (linkedVulns.length === 0) return '';
+            return `
+            <div class="shelf-section">
+                <div class="shelf-section-title">Linked Vulnerabilities (${linkedVulns.length})</div>
+                ${linkedVulns.map(v => `
+                    <div style="padding:10px;border:1px solid var(--aw-border-light);border-radius:var(--aw-radius-md);margin-bottom:6px;cursor:pointer;transition:background 0.15s;" onclick="selectVulnerabilityRow('${v.id}')" onmouseover="this.style.background='var(--aw-hover-item)'" onmouseout="this.style.background=''">
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <span style="font-family:'SF Mono','Fira Code',monospace;font-size:11px;color:var(--aw-primary-main);font-weight:600;">${v.cve}</span>
+                            <span class="cvss-badge ${getCvssClass(v.cvss)}" style="font-size:10px;padding:2px 6px;">${v.cvss}</span>
+                        </div>
+                        <div style="font-size:12px;margin-top:3px;">${v.name.substring(0, 50)}${v.name.length > 50 ? '...' : ''}</div>
+                    </div>
+                `).join('')}
+            </div>`;
+        })()}
+
+        <!-- INTERNAL ONLY SECTIONS -->
+        <div class="internal-only">
+            <div class="shelf-section">
+                <div class="shelf-section-title" style="color:var(--aw-warning-main);">Internal Details</div>
+                <div class="shelf-field">
+                    <div class="shelf-field-label">Internal Name</div>
+                    <div class="shelf-field-value mono">${detection.internalName}</div>
+                </div>
+                <div class="shelf-field">
+                    <div class="shelf-field-label">Scope</div>
+                    <div class="shelf-field-value mono">${detection.scope}</div>
+                </div>
+                <div class="shelf-field">
+                    <div class="shelf-field-label">Parser</div>
+                    <div class="shelf-field-value mono">${detection.parserName}</div>
+                </div>
+                <div class="shelf-field">
+                    <div class="shelf-field-label">Source</div>
+                    <div class="shelf-field-value mono" style="word-break:break-all;font-size:11px;">${detection.source}</div>
+                </div>
+                <div class="shelf-field">
+                    <div class="shelf-field-label">Tags</div>
+                    <div style="display:flex;flex-wrap:wrap;gap:4px;">
+                        ${detection.tags.map(t => `<span class="log-source-tag">${t}</span>`).join('')}
+                    </div>
+                </div>
+            </div>
+
+            <div class="shelf-section">
+                <div class="shelf-section-title" style="color:var(--aw-warning-main);">AI Analysis Reasoning</div>
+                <div style="font-size:12px;line-height:1.6;color:var(--aw-text-secondary);padding:12px;background:var(--aw-hover-subtle);border-radius:var(--aw-radius-md);">
+                    ${detection.reasoning}
+                </div>
+            </div>
+
+            <div class="shelf-section">
+                <div class="shelf-section-title" style="color:var(--aw-warning-main);">Detection Logic</div>
+                <div class="code-block">${escapeHtml(detection.content)}</div>
+            </div>
+        </div>
+    `;
+}
+
+// Generate realistic detection names for a given MITRE technique
+function generateTechniqueDetections(techId, techName, count) {
+    const LOG_SOURCES = ['Windows Security','Linux Agent','Azure AD','Office 365','Network Sensor','DNS Logs','AWS CloudTrail','Okta','CrowdStrike','Palo Alto','Firewall'];
+    const TYPES = ['sigma','sigma','sigma','stateful_rule','intention','snort','sigma','sigma','batch'];
+    const CONF = ['High','High','High','Medium','Medium','Low'];
+    const PREFIXES = [
+        (n) => `${n} Detected`,
+        (n) => `Suspicious ${n} Activity`,
+        (n) => `${n} Attempt Observed`,
+        (n) => `Possible ${n} via Anomalous Behavior`,
+        (n) => `${n} -- Behavioral Pattern`,
+        (n) => `${n} (Sigma Community Rule)`,
+        (n) => `${n} -- Emerging Threats Signature`,
+        (n) => `${n} Indicator Match`,
+        (n) => `${n} -- Threshold Exceeded`,
+        (n) => `${n} Activity from Unusual Source`,
+        (n) => `Multiple ${n} Events Correlated`,
+        (n) => `${n} via Known Tooling`,
+        (n) => `${n} -- Network-Layer Detection`,
+        (n) => `${n} with Suspicious Context`,
+        (n) => `Automated ${n} Behavior`,
+        (n) => `${n} Targeting Critical Assets`,
+    ];
+    // Seed a simple deterministic "random" from techId so results are stable
+    let seed = 0;
+    for (let i = 0; i < techId.length; i++) seed = ((seed << 5) - seed + techId.charCodeAt(i)) | 0;
+    const pick = (arr) => arr[Math.abs(seed = (seed * 16807 + 0) % 2147483647) % arr.length];
+
+    const detections = [];
+    for (let i = 0; i < count; i++) {
+        seed = (seed * 16807 + i * 31) % 2147483647;
+        const type = pick(TYPES);
+        const statusRoll = Math.abs(seed) % 10;
+        detections.push({
+            name: PREFIXES[Math.abs(seed * (i+1)) % PREFIXES.length](techName),
+            type: type,
+            logSource: pick(LOG_SOURCES),
+            status: statusRoll < 7 ? 'ga' : 'beta',
+            confidence: pick(CONF),
+            isNew: i < 2 && Math.abs(seed) % 4 === 0,
+        });
+    }
+    return detections;
+}
+
+function renderTechniqueShelf(tacticId, techId, techName, techCount) {
+    const body = document.getElementById('shelfBody');
+    body.className = 'shelf-body' + (currentView === 'internal' ? ' internal' : '');
+
+    const tactic = TACTICS.find(t => t.id === tacticId);
+    // Real mock detections that match this technique (clickable into full shelf)
+    const realDetections = MOCK_DETECTIONS.filter(d => d.technique === techId);
+    // Generated detections to fill the rest of the count
+    const generatedCount = Math.max(0, techCount - realDetections.length);
+    const generatedDetections = generateTechniqueDetections(techId, techName, generatedCount);
+
+    body.innerHTML = `
+        <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+            <span class="mitre-tag">${techId}</span>
+            <span class="mitre-tag" style="background:rgba(var(--aw-success-rgb),var(--aw-tint-opacity));color:var(--aw-success-main);">${tactic ? tactic.name : tacticId}</span>
+            <span class="badge ${techCount > 0 ? 'ga' : 'low'}">${techCount} detections</span>
+        </div>
+
+        <div class="shelf-section">
+            <div class="shelf-section-title">Technique Overview</div>
+            <div class="shelf-field">
+                <div class="shelf-field-label">Technique Name</div>
+                <div class="shelf-field-value" style="font-size:16px;font-weight:500;">${techName}</div>
+            </div>
+            <div class="shelf-field">
+                <div class="shelf-field-label">Technique ID</div>
+                <div class="shelf-field-value mono">${techId}</div>
+            </div>
+            <div class="shelf-field">
+                <div class="shelf-field-label">Tactic</div>
+                <div class="shelf-field-value">${tactic ? tactic.name : tacticId}</div>
+            </div>
+        </div>
+
+        ${techCount === 0 ? `
+        <div style="padding:20px;text-align:center;background:rgba(var(--aw-error-rgb),0.05);border-radius:var(--aw-radius-lg);border:1px solid rgba(var(--aw-error-rgb),0.15);">
+            <div style="font-size:14px;font-weight:500;color:var(--aw-error-main);margin-bottom:4px;">Coverage Gap</div>
+            <div style="font-size:12px;color:var(--aw-text-muted);">No active detections cover this technique. Consider adding integrations that provide visibility into this attack vector.</div>
+        </div>
+        ` : `
+        <div class="shelf-section">
+            <div class="shelf-section-title">Associated Detections (${techCount})</div>
+            <div style="max-height:500px;overflow-y:auto;">
+                ${realDetections.map(d => `
+                    <div style="padding:10px 12px;border:1px solid var(--aw-border-light);border-radius:var(--aw-radius-md);margin-bottom:6px;cursor:pointer;transition:background 0.15s;" onclick="selectDetectionRow('${d.id}')" onmouseover="this.style.background='var(--aw-hover-item)'" onmouseout="this.style.background=''">
+                        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+                            <div style="font-size:13px;font-weight:500;">${d.displayName}${d.isNew ? '<span class="badge new-badge">NEW</span>' : ''}</div>
+                            <span class="badge ${d.status}" style="flex-shrink:0;margin-left:8px;">${d.status.toUpperCase()}</span>
+                        </div>
+                        <div style="font-size:11px;color:var(--aw-text-muted);margin-top:4px;">
+                            <span style="margin-right:8px;">${d.type}</span>
+                            <span style="margin-right:8px;">${d.logSource}</span>
+                            <span class="badge ${d.confidence.toLowerCase()}" style="font-size:9px;padding:1px 6px;">${d.confidence}</span>
+                        </div>
+                    </div>
+                `).join('')}
+                ${generatedDetections.map(g => `
+                    <div style="padding:10px 12px;border:1px solid var(--aw-border-light);border-radius:var(--aw-radius-md);margin-bottom:6px;cursor:default;">
+                        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+                            <div style="font-size:13px;font-weight:500;">${g.name}${g.isNew ? '<span class="badge new-badge">NEW</span>' : ''}</div>
+                            <span class="badge ${g.status}" style="flex-shrink:0;margin-left:8px;">${g.status.toUpperCase()}</span>
+                        </div>
+                        <div style="font-size:11px;color:var(--aw-text-muted);margin-top:4px;">
+                            <span style="margin-right:8px;">${g.type}</span>
+                            <span style="margin-right:8px;">${g.logSource}</span>
+                            <span class="badge ${g.confidence.toLowerCase()}" style="font-size:9px;padding:1px 6px;">${g.confidence}</span>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+        `}
+    `;
+}
+
+// ===================== INTERACTIONS =====================
+function selectTechnique(tacticId, techId, techName, techCount) {
+    document.querySelectorAll('.tech-box.selected').forEach(el => el.classList.remove('selected'));
+    const el = document.querySelector(`.tech-box[data-tactic="${tacticId}"][data-technique="${techId}"]`);
+    if (el) el.classList.add('selected');
+
+    document.getElementById('shelfTitle').textContent = `${techId} -- ${techName}`;
+    renderTechniqueShelf(tacticId, techId, techName, techCount);
+    openShelf();
+}
+
+function selectDetectionRow(detectionId) {
+    selectedDetection = MOCK_DETECTIONS.find(d => d.id === detectionId);
+    if (!selectedDetection) return;
+
+    document.querySelectorAll('.aw-table tbody tr.selected').forEach(el => el.classList.remove('selected'));
+    const row = document.querySelector(`.aw-table tbody tr[data-id="${detectionId}"]`);
+    if (row) row.classList.add('selected');
+
+    document.getElementById('shelfTitle').textContent = selectedDetection.displayName;
+    renderShelf(selectedDetection);
+    openShelf();
+}
+
+function openShelf() {
+    document.getElementById('detailShelf').classList.add('open');
+    document.getElementById('mainContent').classList.add('shelf-open');
+    shelfOpen = true;
+}
+
+function closeShelf() {
+    document.getElementById('detailShelf').classList.remove('open');
+    document.getElementById('mainContent').classList.remove('shelf-open');
+    shelfOpen = false;
+    selectedDetection = null;
+    document.querySelectorAll('.aw-table tbody tr.selected').forEach(el => el.classList.remove('selected'));
+    document.querySelectorAll('.tech-box.selected').forEach(el => el.classList.remove('selected'));
+    document.querySelectorAll('#vulnTableBody tr.selected').forEach(el => el.classList.remove('selected'));
+}
+
+// ===================== RENDER VULNERABILITY TABLE =====================
+function getCvssClass(cvss) {
+    if (cvss >= 9.0) return 'cvss-critical';
+    if (cvss >= 7.0) return 'cvss-high';
+    if (cvss >= 4.0) return 'cvss-medium';
+    return 'cvss-low';
+}
+
+function renderVulnerabilities() {
+    const tbody = document.getElementById('vulnTableBody');
+    tbody.innerHTML = MOCK_VULNERABILITIES.map(v => `
+        <tr data-vuln-id="${v.id}" onclick="selectVulnerabilityRow('${v.id}')" style="cursor:pointer;">
+            <td>
+                <div style="font-weight:500;">${v.name}</div>
+                <div style="font-size:11px;color:var(--aw-text-muted);margin-top:2px;">${v.description.substring(0, 80)}...</div>
+            </td>
+            <td><span style="font-family:'SF Mono','Fira Code',monospace;font-size:11px;color:var(--aw-primary-main);">${v.cve}</span></td>
+            <td style="font-size:12px;color:var(--aw-text-muted);">${v.source}</td>
+            <td style="font-size:12px;">${v.platform}</td>
+            <td style="font-size:12px;font-weight:500;color:${v.severity === 'Critical' ? 'var(--aw-severity-critical)' : v.severity === 'High' ? 'var(--aw-severity-high)' : 'var(--aw-text-secondary)'};">${v.severity}</td>
+            <td><span class="cvss-badge ${getCvssClass(v.cvss)}">${v.cvss}</span></td>
+            <td>
+                ${v.hasDetection
+                    ? `<span class="detection-link-badge has-det" onclick="event.stopPropagation();selectDetectionRow('${v.detectionIds[0]}')">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        ${v.detectionIds.length} Detection${v.detectionIds.length > 1 ? 's' : ''}
+                       </span>`
+                    : '<span class="detection-link-badge no-det">No Coverage</span>'
+                }
+            </td>
+            <td style="font-size:12px;color:var(--aw-text-muted);">${v.published}</td>
+        </tr>
+    `).join('');
+}
+
+function selectVulnerabilityRow(vulnId) {
+    const vuln = MOCK_VULNERABILITIES.find(v => v.id === vulnId);
+    if (!vuln) return;
+
+    document.querySelectorAll('#vulnTableBody tr.selected').forEach(el => el.classList.remove('selected'));
+    const row = document.querySelector(`#vulnTableBody tr[data-vuln-id="${vulnId}"]`);
+    if (row) row.classList.add('selected');
+
+    document.getElementById('shelfTitle').textContent = vuln.cve + ' -- ' + vuln.name.substring(0, 40);
+    renderVulnerabilityShelf(vuln);
+    openShelf();
+}
+
+function renderVulnerabilityShelf(vuln) {
+    const body = document.getElementById('shelfBody');
+    body.className = 'shelf-body' + (currentView === 'internal' ? ' internal' : '');
+
+    const linkedDetections = vuln.detectionIds.map(did => MOCK_DETECTIONS.find(d => d.id === did)).filter(Boolean);
+
+    body.innerHTML = `
+        <!-- Status Row -->
+        <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center;">
+            <span class="cvss-badge ${getCvssClass(vuln.cvss)}" style="font-size:13px;padding:4px 12px;">${vuln.cvss} ${vuln.severity}</span>
+            <span class="log-source-tag">${vuln.source}</span>
+            <span class="log-source-tag">${vuln.platform}</span>
+            <span style="font-size:11px;color:var(--aw-text-muted);">Published ${vuln.published}</span>
+        </div>
+
+        <!-- CVE ID -->
+        <div class="shelf-section">
+            <div class="shelf-field">
+                <div class="shelf-field-label">CVE Identifier</div>
+                <div class="shelf-field-value mono" style="font-size:15px;font-weight:600;color:var(--aw-primary-main);">${vuln.cve}</div>
+            </div>
+        </div>
+
+        <!-- Description -->
+        <div class="shelf-section">
+            <div class="shelf-section-title">Description</div>
+            <div style="font-size:13px;line-height:1.6;color:var(--aw-text-primary);">${vuln.description}</div>
+        </div>
+
+        <!-- Remediation -->
+        <div class="shelf-section">
+            <div class="shelf-section-title">Remediation</div>
+            <div style="font-size:13px;line-height:1.6;color:var(--aw-text-primary);padding:12px;background:rgba(var(--aw-success-rgb),0.05);border-radius:var(--aw-radius-md);border:1px solid rgba(var(--aw-success-rgb),0.15);">
+                ${vuln.remediation}
+            </div>
+        </div>
+
+        <!-- Affected Products -->
+        <div class="shelf-section">
+            <div class="shelf-section-title">Affected Products</div>
+            <div style="display:flex;flex-wrap:wrap;gap:4px;">
+                ${vuln.affectedProducts.map(p => `<span class="log-source-tag">${p}</span>`).join('')}
+            </div>
+        </div>
+
+        <!-- Detection Coverage -->
+        <div class="shelf-section">
+            <div class="shelf-section-title">Detection Coverage ${vuln.hasDetection ? '(' + linkedDetections.length + ' active)' : ''}</div>
+            ${vuln.hasDetection ? linkedDetections.map(d => `
+                <div style="padding:12px;border:1px solid var(--aw-border-light);border-radius:var(--aw-radius-md);margin-bottom:8px;cursor:pointer;transition:background 0.15s;" onclick="selectDetectionRow('${d.id}')" onmouseover="this.style.background='var(--aw-hover-item)'" onmouseout="this.style.background=''">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+                        <div style="font-size:13px;font-weight:500;">${d.displayName}</div>
+                        <span class="badge ${d.status}" style="flex-shrink:0;margin-left:8px;">${d.status.toUpperCase()}</span>
+                    </div>
+                    <div style="font-size:11px;color:var(--aw-text-muted);margin-top:4px;">${d.type} -- ${d.logSource} -- ${d.confidence} confidence</div>
+                </div>
+            `).join('') : `
+                <div style="padding:20px;text-align:center;background:rgba(var(--aw-error-rgb),0.05);border-radius:var(--aw-radius-lg);border:1px solid rgba(var(--aw-error-rgb),0.15);">
+                    <div style="font-size:14px;font-weight:500;color:var(--aw-error-main);margin-bottom:4px;">No Detection Coverage</div>
+                    <div style="font-size:12px;color:var(--aw-text-muted);">No active detections currently cover this vulnerability. Arctic Wolf is continuously developing new detection content.</div>
+                </div>
+            `}
+        </div>
+    `;
+}
+
+// ===================== HELPERS =====================
+function getTechniqueName(techId) {
+    for (const tactic of TACTICS) {
+        const tech = tactic.techniques.find(t => t.id === techId);
+        if (tech) return tech.name;
+    }
+    return techId;
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// ===================== EVENT LISTENERS =====================
+
+// Tab switching
+document.querySelectorAll('.aw-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+        document.querySelectorAll('.aw-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+        closeShelf();
+    });
+});
+
+// Shelf close
+document.getElementById('shelfClose').addEventListener('click', closeShelf);
+
+// View toggle (Internal/External)
+document.querySelectorAll('.view-toggle-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.view-toggle-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentView = btn.dataset.view;
+        const body = document.getElementById('shelfBody');
+        if (currentView === 'internal') {
+            body.classList.add('internal');
+        } else {
+            body.classList.remove('internal');
+        }
+    });
+});
+
+// Filter chips
+document.querySelectorAll('.filter-chips').forEach(chipGroup => {
+    chipGroup.querySelectorAll('.filter-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            chipGroup.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+        });
+    });
+});
+
+// Keyboard: Escape closes shelf
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && shelfOpen) closeShelf();
+});
+
+// ===================== INIT =====================
+renderMitreMap();
+renderTable();
+renderVulnerabilities();
+</script>
+</body>
+</html>

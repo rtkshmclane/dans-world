@@ -173,6 +173,16 @@ apps:
     source:
       static: true
 
+  - id: detection-catalog-v2
+    name: Detection Catalog v2
+    description: "MITRE ATT&CK map, detection table, vulnerability coverage -- DC v2 prototype"
+    url: /apps/detection-catalog-v2/
+    icon: shield
+    groups: [analytics, admin]
+    author: Sam
+    source:
+      static: true
+
 demos:
   - id: aurora-xdr-lite
     name: Aurora XDR Lite
