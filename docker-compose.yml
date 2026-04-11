@@ -86,7 +86,7 @@ services:
       - DETECTION_CATALOG_PATH=/data/detection_catalog
       - ADOPTION_DB_PATH=/data/analytics.duckdb
     restart: unless-stopped
-    mem_limit: ${INTEGRATION_CATALOG_MEMORY_LIMIT:-512m}
+    mem_limit: ${INTEGRATION_CATALOG_MEMORY_LIMIT:-1g}
     networks:
       - dw-net
 
