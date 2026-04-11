@@ -1,13 +1,115 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="portal">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Detection Catalog v2 -- Prototype</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<title>Detection Catalog v2 -- Portal Themed Prototype</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Lato:wght@300;400;700;900&family=Encode+Sans:wght@300;400;500;600;700&family=Courier+Prime&display=swap" rel="stylesheet">
 <style>
-/* ===================== Fenrir v2 Design Tokens ===================== */
-:root {
+/* ===================== Theme Toggle Bar ===================== */
+.theme-toggle-bar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 999;
+    height: 40px; background: #1B2A4A; display: flex; align-items: center;
+    justify-content: center; gap: 12px;
+}
+.theme-toggle-bar .toggle-label {
+    color: rgba(255,255,255,0.7); font-size: 12px; font-weight: 600;
+    font-family: 'Inter', sans-serif; letter-spacing: 0.3px;
+}
+.theme-toggle-bar .toggle-group {
+    display: inline-flex; background: rgba(255,255,255,0.1); border-radius: 9999px; padding: 2px;
+}
+.theme-toggle-bar .toggle-btn {
+    padding: 4px 16px; border-radius: 9999px; font-size: 11px; font-weight: 600;
+    cursor: pointer; border: none; background: transparent; color: rgba(255,255,255,0.5);
+    transition: all 0.2s; font-family: 'Inter', sans-serif;
+}
+.theme-toggle-bar .toggle-btn.active {
+    background: rgba(255,255,255,0.2); color: #FFFFFF;
+}
+.theme-toggle-bar .toggle-btn:hover:not(.active) {
+    color: rgba(255,255,255,0.8);
+}
+
+/* ===================== Portal Theme (Current Unified Portal) ===================== */
+/* Extracted from live portal (dashboard.arcticwolf.com) via Chrome DevTools 2026-04-10 */
+[data-theme="portal"] {
+    --aw-font-body: 'Lato', sans-serif;
+    --aw-font-heading: 'Encode Sans', sans-serif;
+    --aw-font-code: 'Courier Prime', monospace;
+    --aw-primary-light: #1983D4;
+    --aw-primary-main: #0059B2;
+    --aw-primary-dark: #00244C;
+    --aw-secondary-light: #f8a863;
+    --aw-secondary-main: #FF730F;
+    --aw-error-light: #ef5350;
+    --aw-error-main: #D32F2F;
+    --aw-warning-main: #ef6c00;
+    --aw-success-light: #81CA72;
+    --aw-success-main: #81CA72;
+    --aw-info-main: #3195D2;
+    --aw-text-primary: rgba(0, 0, 0, 0.87);
+    --aw-text-secondary: rgba(0, 0, 0, 0.6);
+    --aw-text-muted: rgba(0, 0, 0, 0.6);
+    --aw-text-hint: #58595B;
+    --aw-text-inverse: #FFFFFF;
+    --aw-label-bold: #3E3E40;
+    --aw-link-blue: #23618E;
+    --aw-bg-default: #FFFFFF;
+    --aw-bg-paper: #FFFFFF;
+    --aw-bg-base: #ECECEC;
+    --aw-bg-elevated: #FFFFFF;
+    --aw-bg-light: #F5F5F5;
+    --aw-bg-header: rgb(245, 245, 245);  /* MuiAppBar extracted */
+    --aw-info-banner-bg: #ECF7FF;
+    --aw-info-banner-border: #3195D2;
+    --aw-divider: rgba(0, 0, 0, 0.12);
+    --aw-border: rgba(0, 0, 0, 0.12);
+    --aw-border-input: rgba(0, 0, 0, 0.23);
+    --aw-border-light: rgba(0, 0, 0, 0.08);
+    --aw-accent-blue: #0059B2;
+    --aw-radius-sm: 2px;
+    --aw-radius-md: 4px;
+    --aw-radius-lg: 8px;
+    --aw-radius-card: 4px;
+    --aw-radius-pill: 9999px;
+    /* Material Design elevation shadows (extracted from live MUI components) */
+    --aw-shadow-card: 0px 2px 1px -1px rgba(0,0,0,0.2), 0px 1px 1px 0px rgba(0,0,0,0.14), 0px 1px 3px 0px rgba(0,0,0,0.12);  /* MUI elevation 1 */
+    --aw-shadow-header: 0px 2px 4px -1px rgba(0,0,0,0.2), 0px 4px 5px 0px rgba(0,0,0,0.14), 0px 1px 10px 0px rgba(0,0,0,0.12);  /* MUI elevation 4 */
+    --aw-shadow-sm: 0px 2px 1px -1px rgba(0,0,0,0.2), 0px 1px 1px 0px rgba(0,0,0,0.14), 0px 1px 3px 0px rgba(0,0,0,0.12);
+    --aw-shadow-md: 0px 3px 3px -2px rgba(0,0,0,0.2), 0px 3px 4px 0px rgba(0,0,0,0.14), 0px 1px 8px 0px rgba(0,0,0,0.12);
+    --aw-shadow-dropdown: 0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,0,0.14), 0px 3px 14px 2px rgba(0,0,0,0.12);
+    --aw-hover-subtle: rgba(0, 0, 0, 0.04);
+    --aw-hover-item: rgba(0, 0, 0, 0.04);
+    --aw-active-item: rgba(0, 89, 178, 0.08);
+    --aw-active-color: var(--aw-primary-main);
+    --aw-selected-row: rgba(0, 89, 178, 0.08);
+    --aw-primary-rgb: 0, 89, 178;
+    --aw-success-rgb: 129, 202, 114;
+    --aw-secondary-rgb: 255, 115, 15;
+    --aw-error-rgb: 211, 47, 47;
+    --aw-tint-opacity: 0.15;
+    --aw-severity-critical: #D32F2F;
+    --aw-severity-high: #ef6c00;
+    --aw-severity-medium: #f9a825;
+    --aw-severity-low: #2e7d32;
+    /* Portal-specific: table header weight, stat accent style, badge style */
+    --aw-table-header-weight: 400;
+    --aw-stat-accent-style: solid;
+    --aw-badge-ga-bg: #81CA72;
+    --aw-badge-ga-color: #000000;  /* GA badge text is black on green pill */
+    --aw-badge-ga-radius: 9999px;
+    --sidebar-w: 240px;
+    --header-h: 64px;  /* MuiAppBar: 64px height (extracted) */
+    --shelf-w: 480px;
+    --toggle-bar-h: 40px;
+}
+
+/* ===================== v2 Prototype Theme (Fenrir v2) ===================== */
+[data-theme="v2"] {
+    --aw-font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --aw-font-heading: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --aw-font-code: 'SF Mono', 'Fira Code', monospace;
     --aw-primary-light: #0099FF;
     --aw-primary-main: #0059B2;
     --aw-primary-dark: #00244C;
@@ -24,17 +126,25 @@
     --aw-text-muted: #8A94A6;
     --aw-text-hint: #616161;
     --aw-text-inverse: #FFFFFF;
+    --aw-label-bold: #3E3E40;
+    --aw-link-blue: #0059B2;
     --aw-bg-default: #FFFFFF;
     --aw-bg-paper: #FFFFFF;
     --aw-bg-base: #f5f6f8;
     --aw-bg-elevated: #FFFFFF;
+    --aw-bg-light: #f5f6f8;
+    --aw-info-banner-bg: rgba(0, 89, 178, 0.05);
+    --aw-info-banner-border: #0099FF;
     --aw-divider: #E0E0E0;
     --aw-border: #E2E6ED;
+    --aw-border-input: #E2E6ED;
     --aw-border-light: #EEF1F5;
     --aw-accent-blue: #2B7DE9;
     --aw-radius-sm: 4px;
     --aw-radius-md: 6px;
     --aw-radius-lg: 8px;
+    --aw-radius-card: 12px;
+    --aw-radius-pill: 12px;
     --aw-shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
     --aw-shadow-md: 0 2px 8px rgba(0,0,0,0.12);
     --aw-shadow-dropdown: 0 4px 20px rgba(0,0,0,0.15);
@@ -42,6 +152,7 @@
     --aw-hover-item: rgba(0,89,178,0.06);
     --aw-active-item: rgba(0,89,178,0.08);
     --aw-active-color: var(--aw-primary-main);
+    --aw-selected-row: rgba(0, 89, 178, 0.08);
     --aw-primary-rgb: 0, 89, 178;
     --aw-success-rgb: 46, 125, 50;
     --aw-secondary-rgb: 255, 115, 15;
@@ -51,14 +162,22 @@
     --aw-severity-high: #ef6c00;
     --aw-severity-medium: #f9a825;
     --aw-severity-low: #2e7d32;
+    /* v2-specific: table header weight, stat accent style, badge style */
+    --aw-table-header-weight: 600;
+    --aw-stat-accent-style: gradient;
+    --aw-badge-ga-bg: rgba(46, 125, 50, 0.15);
+    --aw-badge-ga-color: #2e7d32;
+    --aw-badge-ga-radius: 12px;
     --sidebar-w: 240px;
     --header-h: 56px;
     --shelf-w: 480px;
+    --toggle-bar-h: 40px;
 }
 
+/* ===================== Reset & Base ===================== */
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: var(--aw-font-body);
     background: var(--aw-bg-base);
     color: var(--aw-text-primary);
 }
@@ -68,7 +187,12 @@ a { text-decoration: none; color: inherit; }
 .aw-header {
     display: flex; align-items: center; height: var(--header-h);
     background: var(--aw-bg-paper); border-bottom: 1px solid var(--aw-divider);
-    padding: 0 16px; position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+    padding: 0 16px; position: fixed; top: var(--toggle-bar-h); left: 0; right: 0; z-index: 200;
+}
+/* Portal: MuiAppBar uses bg #F5F5F5 with Material elevation 4 shadow, no bottom border */
+[data-theme="portal"] .aw-header {
+    background: var(--aw-bg-header); border-bottom: none;
+    box-shadow: var(--aw-shadow-header);
 }
 .aw-header .hamburger {
     font-size: 20px; color: var(--aw-text-hint); cursor: pointer; margin-right: 12px;
@@ -76,44 +200,55 @@ a { text-decoration: none; color: inherit; }
 }
 .aw-header .header-logo { height: 28px; margin-right: 12px; }
 .aw-header .sep { width: 1px; height: 24px; background: var(--aw-divider); margin: 0 12px; flex-shrink: 0; }
-.aw-header .header-app-name { color: var(--aw-text-muted); font-size: 14px; white-space: nowrap; }
+.aw-header .header-app-name { color: var(--aw-text-muted); font-size: 14px; white-space: nowrap; font-family: var(--aw-font-body); }
 .aw-header .right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
 .customer-selector {
     display: flex; align-items: center; gap: 6px; padding: 6px 12px;
     border: 1px solid var(--aw-border); border-radius: var(--aw-radius-md);
     font-size: 13px; font-weight: 500; color: var(--aw-text-primary); cursor: pointer;
-    background: var(--aw-bg-paper);
+    background: var(--aw-bg-paper); font-family: var(--aw-font-body);
 }
 .customer-selector:hover { border-color: var(--aw-primary-main); }
+/* Portal: customer selector matches MUI button style */
+[data-theme="portal"] .customer-selector { font-size: 14px; font-weight: 400; border-radius: 4px; }
 
 /* ===================== Layout ===================== */
-.aw-layout { display: flex; margin-top: var(--header-h); min-height: calc(100vh - var(--header-h)); }
+.aw-layout { display: flex; margin-top: calc(var(--header-h) + var(--toggle-bar-h)); min-height: calc(100vh - var(--header-h) - var(--toggle-bar-h)); }
 
 /* ===================== Sidebar ===================== */
 .aw-sidebar {
     width: var(--sidebar-w); min-width: var(--sidebar-w); background: var(--aw-bg-paper);
-    border-right: 1px solid var(--aw-divider); position: fixed; top: var(--header-h); bottom: 0;
+    border-right: 1px solid var(--aw-divider); position: fixed; top: calc(var(--header-h) + var(--toggle-bar-h)); bottom: 0;
     left: 0; z-index: 100; display: flex; flex-direction: column; overflow-y: auto;
 }
+/* Portal: MUI Drawer has 1px right border rgba(0,0,0,0.12), white bg */
+[data-theme="portal"] .aw-sidebar { border-right: 1px solid rgba(0, 0, 0, 0.12); }
 .nav-section-label {
     padding: 16px 12px 4px; font-size: 10px; font-weight: 600;
     text-transform: uppercase; letter-spacing: 1.2px; color: var(--aw-text-muted);
+    font-family: var(--aw-font-body);
 }
 .nav-item {
     display: flex; align-items: center; gap: 12px; padding: 10px 12px; font-size: 14px; font-weight: 500;
     color: var(--aw-text-secondary); cursor: pointer; border-left: 3px solid transparent;
-    transition: background 0.15s;
+    transition: background 0.15s; font-family: var(--aw-font-body);
 }
 .nav-item:hover { background: var(--aw-hover-item); }
 .nav-item.active { border-left-color: var(--aw-active-color); background: var(--aw-active-item); color: var(--aw-active-color); }
+/* Portal: MUI nav items are 400 weight, active gets blue bg tint */
+[data-theme="portal"] .nav-item { font-weight: 400; font-size: 16px; padding: 10px 16px; border-left: none; }
+[data-theme="portal"] .nav-item.active { border-left: none; background: var(--aw-active-item); color: var(--aw-active-color); font-weight: 400; }
 .nav-icon { width: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .nav-label { flex: 1; }
 .sub-item {
     display: block; padding: 8px 12px 8px 48px; font-size: 13px; color: var(--aw-text-secondary);
     cursor: pointer; border-left: 3px solid transparent; transition: background 0.15s;
+    font-family: var(--aw-font-body);
 }
 .sub-item:hover { background: var(--aw-hover-item); }
 .sub-item.active { border-left-color: var(--aw-active-color); background: var(--aw-active-item); color: var(--aw-active-color); }
+/* Portal: sub-items indented under parent, Lato 14px 400 */
+[data-theme="portal"] .sub-item { font-size: 14px; padding-left: 56px; border-left: none; }
 
 /* ===================== Content ===================== */
 .aw-content {
@@ -122,21 +257,51 @@ a { text-decoration: none; color: inherit; }
 }
 .aw-content.shelf-open { margin-right: var(--shelf-w); }
 .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
-.page-title { font-size: 22px; font-weight: 400; color: var(--aw-text-primary); }
+.page-title {
+    font-size: 22px; font-weight: 700; color: var(--aw-text-primary);
+    font-family: var(--aw-font-heading);
+}
+/* Portal: page title is Encode Sans 18px 700, color rgb(0,0,0) (pure black) */
+[data-theme="portal"] .page-title { font-size: 18px; color: rgb(0, 0, 0); }
 
 /* ===================== Stat Cards ===================== */
 .stats-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 24px; }
 .stat-card {
-    background: var(--aw-bg-paper); border-radius: 12px; border: 1px solid var(--aw-border);
+    background: var(--aw-bg-paper); border-radius: var(--aw-radius-card); border: 1px solid var(--aw-border);
     padding: 16px; position: relative; overflow: hidden;
+    box-shadow: var(--aw-shadow-sm);
+}
+/* Portal: MUI Paper elevation 1 shadow, no explicit border */
+[data-theme="portal"] .stat-card {
+    border: none; box-shadow: var(--aw-shadow-card);
 }
 .stat-card .accent { position: absolute; top: 0; left: 0; right: 0; height: 3px; }
-.stat-card .accent.blue { background: linear-gradient(90deg, var(--aw-primary-main), var(--aw-primary-light)); }
-.stat-card .accent.green { background: linear-gradient(90deg, var(--aw-success-main), var(--aw-success-light)); }
-.stat-card .accent.orange { background: linear-gradient(90deg, var(--aw-secondary-main), var(--aw-secondary-light)); }
-.stat-card .accent.red { background: linear-gradient(90deg, var(--aw-error-main), var(--aw-error-light)); }
-.stat-label { font-size: 11px; color: var(--aw-text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-bottom: 6px; }
-.stat-value { font-size: 28px; font-weight: 300; color: var(--aw-text-primary); line-height: 1; }
+/* v2 theme: gradient accents */
+[data-theme="v2"] .stat-card .accent.blue { background: linear-gradient(90deg, var(--aw-primary-main), var(--aw-primary-light)); }
+[data-theme="v2"] .stat-card .accent.green { background: linear-gradient(90deg, var(--aw-success-main), var(--aw-success-light)); }
+[data-theme="v2"] .stat-card .accent.orange { background: linear-gradient(90deg, var(--aw-secondary-main), var(--aw-secondary-light)); }
+[data-theme="v2"] .stat-card .accent.red { background: linear-gradient(90deg, var(--aw-error-main), var(--aw-error-light)); }
+[data-theme="v2"] .stat-card .accent.purple { background: linear-gradient(90deg, #7b1fa2, #ba68c8); }
+/* Portal theme: solid accents */
+[data-theme="portal"] .stat-card .accent.blue { background: var(--aw-primary-main); }
+[data-theme="portal"] .stat-card .accent.green { background: #81CA72; }
+[data-theme="portal"] .stat-card .accent.orange { background: var(--aw-secondary-main); }
+[data-theme="portal"] .stat-card .accent.red { background: var(--aw-error-main); }
+[data-theme="portal"] .stat-card .accent.purple { background: #7b1fa2; }
+
+.stat-label {
+    font-size: 11px; color: var(--aw-text-muted); text-transform: uppercase; letter-spacing: 0.5px;
+    font-weight: 600; margin-bottom: 6px; font-family: var(--aw-font-body);
+}
+/* Portal: stat labels are Encode Sans 14px 500, secondary color, sentence case */
+[data-theme="portal"] .stat-label {
+    font-size: 14px; font-weight: 500; font-family: var(--aw-font-heading);
+    text-transform: none; letter-spacing: normal; color: var(--aw-text-secondary);
+}
+.stat-value {
+    font-size: 28px; font-weight: 300; color: var(--aw-text-primary); line-height: 1;
+    font-family: var(--aw-font-heading);
+}
 
 /* ===================== Tabs ===================== */
 .aw-tabs {
@@ -146,10 +311,13 @@ a { text-decoration: none; color: inherit; }
     padding: 12px 20px; font-size: 13px; font-weight: 500; cursor: pointer;
     border-bottom: 2px solid transparent; color: var(--aw-text-secondary);
     transition: all 0.15s; background: none; border-top: none; border-left: none; border-right: none;
-    font-family: inherit; display: flex; align-items: center; gap: 8px;
+    font-family: var(--aw-font-body); display: flex; align-items: center; gap: 8px;
 }
 .aw-tab:hover { color: var(--aw-text-primary); background: var(--aw-hover-item); }
 .aw-tab.active { color: var(--aw-active-color); border-bottom-color: var(--aw-active-color); }
+/* Portal: MUI tabs are 14px Lato 400, with 2px blue underline on active */
+[data-theme="portal"] .aw-tab { font-size: 14px; font-weight: 400; padding: 12px 16px; }
+[data-theme="portal"] .aw-tab.active { font-weight: 500; }
 .tab-count {
     font-size: 10px; background: var(--aw-border-light); padding: 1px 6px; border-radius: 8px;
 }
@@ -162,47 +330,64 @@ a { text-decoration: none; color: inherit; }
     display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
 }
 .toolbar-search {
-    flex: 1; padding: 8px 12px 8px 36px; border: 1px solid var(--aw-border); border-radius: var(--aw-radius-md);
-    font-size: 13px; font-family: inherit; outline: none; background: var(--aw-bg-paper); color: var(--aw-text-primary);
+    flex: 1; padding: 8px 12px 8px 36px; border: 1px solid var(--aw-border-input); border-radius: var(--aw-radius-md);
+    font-size: 13px; font-family: var(--aw-font-body); outline: none; background: var(--aw-bg-paper); color: var(--aw-text-primary);
     position: relative;
 }
 .toolbar-search:focus { border-color: var(--aw-active-color); }
+/* Portal: MUI input fields are Lato 16px, 40px height, 4px radius */
+[data-theme="portal"] .toolbar-search { font-size: 16px; height: 40px; border-radius: 4px; }
 .search-wrap { position: relative; flex: 1; }
 .search-wrap svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--aw-text-muted); }
 .filter-chips { display: flex; gap: 6px; flex-wrap: wrap; }
 .filter-chip {
-    padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight: 500;
+    padding: 4px 12px; border-radius: var(--aw-radius-pill); font-size: 11px; font-weight: 500;
     cursor: pointer; background: var(--aw-hover-subtle); color: var(--aw-text-secondary);
-    border: 1px solid transparent; transition: all 0.15s;
+    border: 1px solid transparent; transition: all 0.15s; font-family: var(--aw-font-body);
 }
 .filter-chip:hover { background: var(--aw-hover-item); }
 .filter-chip.active {
     background: rgba(var(--aw-primary-rgb), var(--aw-tint-opacity)); color: var(--aw-active-color);
     border-color: var(--aw-active-color);
 }
+/* Portal: filter chips use Lato 14px 700, link color for active */
+[data-theme="portal"] .filter-chip { font-weight: 700; font-size: 14px; }
+[data-theme="portal"] .filter-chip.active { color: var(--aw-link-blue); border-color: var(--aw-link-blue); }
 
 /* ===================== Data Table ===================== */
 .aw-table { width: 100%; border-collapse: collapse; }
 .aw-table th {
-    text-align: left; padding: 10px 14px; font-size: 11px; font-weight: 600;
+    text-align: left; padding: 10px 14px; font-size: 11px; font-weight: var(--aw-table-header-weight);
     color: var(--aw-text-muted); text-transform: uppercase; letter-spacing: 0.5px;
     border-bottom: 1px solid var(--aw-border); background: var(--aw-bg-paper);
-    position: sticky; top: 0; z-index: 5;
+    position: sticky; top: 0; z-index: 5; font-family: var(--aw-font-body);
 }
+/* Portal theme: table headers use primary text color at weight 400 */
+[data-theme="portal"] .aw-table th { color: var(--aw-text-primary); font-weight: 400; }
 .aw-table td {
     padding: 10px 14px; font-size: 13px; border-bottom: 1px solid var(--aw-border-light);
-    color: var(--aw-text-primary);
+    color: var(--aw-text-primary); font-family: var(--aw-font-body);
 }
+/* Portal: MUI DataGrid -- 14px Lato 400, 56px row height, no visible row borders */
+[data-theme="portal"] .aw-table td { font-size: 14px; height: 56px; padding: 0 10px; border-bottom: 1px solid rgba(0,0,0,0.12); }
+[data-theme="portal"] .aw-table th { height: 56px; padding: 0 10px; font-size: 14px; border-bottom: 1px solid rgba(0,0,0,0.12); }
 .aw-table tr { cursor: pointer; transition: background 0.1s; }
 .aw-table tbody tr:hover td { background: var(--aw-hover-item); }
-.aw-table tbody tr.selected td { background: var(--aw-active-item); }
+.aw-table tbody tr.selected td { background: var(--aw-selected-row); }
 
 /* ===================== Badges ===================== */
 .badge {
     display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px;
-    border-radius: 12px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px;
+    border-radius: var(--aw-radius-pill); font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.3px; font-family: var(--aw-font-body);
 }
-.badge.ga { background: rgba(var(--aw-success-rgb), var(--aw-tint-opacity)); color: var(--aw-success-main); }
+/* Portal: GA badge is green pill #81CA72, black text, 14px 700, padding 4px 8px */
+[data-theme="portal"] .badge { font-size: 14px; font-weight: 700; padding: 4px 8px; }
+/* GA badge: portal gets green pill, v2 gets tinted */
+.badge.ga {
+    background: var(--aw-badge-ga-bg); color: var(--aw-badge-ga-color);
+    border-radius: var(--aw-badge-ga-radius);
+}
 .badge.beta { background: rgba(var(--aw-primary-rgb), var(--aw-tint-opacity)); color: var(--aw-primary-main); }
 .badge.new-badge {
     background: rgba(var(--aw-secondary-rgb), var(--aw-tint-opacity)); color: var(--aw-secondary-main);
@@ -211,12 +396,16 @@ a { text-decoration: none; color: inherit; }
 .badge.high { background: rgba(var(--aw-success-rgb), var(--aw-tint-opacity)); color: var(--aw-success-main); }
 .badge.medium { background: rgba(var(--aw-secondary-rgb), var(--aw-tint-opacity)); color: var(--aw-warning-main); }
 .badge.low { background: rgba(var(--aw-error-rgb), var(--aw-tint-opacity)); color: var(--aw-error-main); }
+/* Portal theme overrides for confidence badges */
+[data-theme="portal"] .badge.high { background: rgba(129, 202, 114, 0.2); color: #2e7d32; }
 
 /* ===================== MITRE ATT&CK Navigator Matrix ===================== */
 .mitre-matrix-wrap {
-    background: var(--aw-bg-paper); border: 1px solid var(--aw-border); border-radius: 12px;
-    overflow-x: auto; padding: 0;
+    background: var(--aw-bg-paper); border: 1px solid var(--aw-border); border-radius: var(--aw-radius-card);
+    overflow-x: auto; padding: 0; box-shadow: var(--aw-shadow-sm);
 }
+/* Portal: MUI Paper elevation 1 */
+[data-theme="portal"] .mitre-matrix-wrap { border: none; box-shadow: var(--aw-shadow-card); }
 .mitre-matrix {
     display: grid; grid-template-columns: repeat(14, minmax(110px, 1fr));
     min-width: 1540px; gap: 0;
@@ -228,9 +417,11 @@ a { text-decoration: none; color: inherit; }
     border-right: 1px solid rgba(255,255,255,0.15);
     height: 90px; display: flex; flex-direction: column; align-items: center; justify-content: center;
 }
-.tactic-col:first-child .tactic-header-cell { border-radius: 12px 0 0 0; }
-.tactic-col:last-child .tactic-header-cell { border-radius: 0 12px 0 0; border-right: none; }
-.tactic-header-cell .tactic-name { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; line-height: 1.3; }
+/* Portal theme: flat header instead of gradient */
+[data-theme="portal"] .tactic-header-cell { background: var(--aw-primary-main); }
+.tactic-col:first-child .tactic-header-cell { border-radius: var(--aw-radius-card) 0 0 0; }
+.tactic-col:last-child .tactic-header-cell { border-radius: 0 var(--aw-radius-card) 0 0; border-right: none; }
+.tactic-header-cell .tactic-name { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; line-height: 1.3; font-family: var(--aw-font-heading); }
 .tactic-header-cell .tactic-id { font-size: 9px; opacity: 0.6; margin-top: 2px; }
 .tactic-header-cell .tactic-stats { font-size: 9px; opacity: 0.8; margin-top: 4px; }
 .tactic-header-cell .tactic-bar { height: 3px; background: rgba(255,255,255,0.2); border-radius: 2px; margin-top: 6px; overflow: hidden; }
@@ -239,7 +430,7 @@ a { text-decoration: none; color: inherit; }
 .technique-cell {
     padding: 3px; border-right: 1px solid var(--aw-border-light);
     border-bottom: 1px solid var(--aw-border-light);
-    height: 52px; /* fixed height for cross-column row alignment */
+    height: 52px;
 }
 .tactic-col:last-child .technique-cell { border-right: none; }
 .tech-box {
@@ -250,8 +441,8 @@ a { text-decoration: none; color: inherit; }
 }
 .tech-box:hover { transform: scale(1.05); z-index: 2; box-shadow: var(--aw-shadow-md); }
 .tech-box.selected { outline: 2px solid var(--aw-primary-main); outline-offset: 1px; }
-.tech-box .tech-id { font-size: 9px; font-weight: 700; line-height: 1; }
-.tech-box .tech-name { font-size: 8px; line-height: 1.2; margin-top: 2px; max-height: 20px; overflow: hidden; }
+.tech-box .tech-id { font-size: 9px; font-weight: 700; line-height: 1; font-family: var(--aw-font-body); }
+.tech-box .tech-name { font-size: 8px; line-height: 1.2; margin-top: 2px; max-height: 20px; overflow: hidden; font-family: var(--aw-font-body); }
 .tech-box .tech-count-badge {
     position: absolute; top: 2px; right: 2px; font-size: 7px; font-weight: 700;
     background: rgba(0,0,0,0.25); color: #fff; border-radius: 6px; padding: 1px 4px; min-width: 14px;
@@ -268,6 +459,7 @@ a { text-decoration: none; color: inherit; }
 .matrix-legend {
     display: flex; align-items: center; gap: 16px; padding: 12px 16px;
     border-top: 1px solid var(--aw-border-light); font-size: 11px; color: var(--aw-text-muted);
+    font-family: var(--aw-font-body);
 }
 .legend-item { display: flex; align-items: center; gap: 5px; }
 .legend-swatch { width: 16px; height: 12px; border-radius: 2px; }
@@ -275,18 +467,23 @@ a { text-decoration: none; color: inherit; }
 
 /* ===================== Slide-out Detail Shelf ===================== */
 .detail-shelf {
-    position: fixed; top: var(--header-h); right: 0; bottom: 0; width: var(--shelf-w);
+    position: fixed; top: calc(var(--header-h) + var(--toggle-bar-h)); right: 0; bottom: 0; width: var(--shelf-w);
     background: var(--aw-bg-paper); border-left: 1px solid var(--aw-divider);
     box-shadow: -4px 0 24px rgba(0,0,0,0.1); z-index: 150;
     display: flex; flex-direction: column;
     transform: translateX(100%); transition: transform 0.3s ease;
+}
+/* Portal: MUI drawer with elevation shadow */
+[data-theme="portal"] .detail-shelf {
+    box-shadow: -2px 0 8px rgba(0,0,0,0.15);
+    border-left: 1px solid rgba(0,0,0,0.12);
 }
 .detail-shelf.open { transform: translateX(0); }
 .shelf-header {
     padding: 16px 20px; border-bottom: 1px solid var(--aw-divider);
     display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
 }
-.shelf-header .shelf-title { font-size: 16px; font-weight: 600; color: var(--aw-text-primary); flex: 1; margin-right: 12px; }
+.shelf-header .shelf-title { font-size: 16px; font-weight: 600; color: var(--aw-text-primary); flex: 1; margin-right: 12px; font-family: var(--aw-font-heading); }
 .shelf-close {
     background: none; border: none; cursor: pointer; padding: 6px;
     color: var(--aw-text-hint); border-radius: var(--aw-radius-sm);
@@ -302,7 +499,7 @@ a { text-decoration: none; color: inherit; }
 .view-toggle-btn {
     padding: 4px 14px; border-radius: 14px; font-size: 11px; font-weight: 600;
     cursor: pointer; border: none; background: transparent; color: var(--aw-text-muted);
-    transition: all 0.2s; font-family: inherit;
+    transition: all 0.2s; font-family: var(--aw-font-body);
 }
 .view-toggle-btn.active {
     background: var(--aw-bg-paper); color: var(--aw-primary-main);
@@ -314,35 +511,44 @@ a { text-decoration: none; color: inherit; }
 .shelf-section-title {
     font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
     color: var(--aw-text-muted); margin-bottom: 10px; padding-bottom: 6px;
-    border-bottom: 1px solid var(--aw-border-light);
+    border-bottom: 1px solid var(--aw-border-light); font-family: var(--aw-font-body);
 }
 .shelf-field { margin-bottom: 12px; }
-.shelf-field-label { font-size: 11px; color: var(--aw-text-muted); font-weight: 500; margin-bottom: 3px; }
-.shelf-field-value { font-size: 13px; color: var(--aw-text-primary); line-height: 1.5; }
-.shelf-field-value.mono { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12px; }
+.shelf-field-label { font-size: 11px; color: var(--aw-text-muted); font-weight: 500; margin-bottom: 3px; font-family: var(--aw-font-body); }
+/* Portal: detail panel labels are Lato 12px 400, color rgba(0,0,0,0.6) */
+[data-theme="portal"] .shelf-field-label { font-size: 12px; font-weight: 400; color: rgba(0, 0, 0, 0.6); }
+.shelf-field-value { font-size: 13px; color: var(--aw-text-primary); line-height: 1.5; font-family: var(--aw-font-body); }
+[data-theme="portal"] .shelf-field-value { font-size: 14px; }
+.shelf-field-value.mono { font-family: var(--aw-font-code); font-size: 12px; }
 
 .ai-summary-box {
     background: linear-gradient(135deg, rgba(var(--aw-secondary-rgb), 0.05) 0%, rgba(var(--aw-primary-rgb), 0.05) 100%);
     border: 1px solid rgba(var(--aw-secondary-rgb), 0.2);
     border-radius: var(--aw-radius-lg); padding: 14px; font-size: 13px; line-height: 1.6;
-    color: var(--aw-text-primary);
+    color: var(--aw-text-primary); font-family: var(--aw-font-body);
+}
+/* Portal theme: use info banner style for AI summary */
+[data-theme="portal"] .ai-summary-box {
+    background: var(--aw-info-banner-bg);
+    border: 1px solid var(--aw-info-banner-border);
 }
 .ai-summary-box .ai-label {
     font-size: 10px; font-weight: 700; color: var(--aw-secondary-main);
     text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;
     display: flex; align-items: center; gap: 6px;
 }
+[data-theme="portal"] .ai-summary-box .ai-label { color: var(--aw-info-main); }
 
 .mitre-tag {
     display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px;
     background: rgba(var(--aw-primary-rgb), var(--aw-tint-opacity));
     border-radius: var(--aw-radius-sm); font-size: 11px; font-weight: 500;
-    color: var(--aw-primary-main); margin: 2px;
+    color: var(--aw-primary-main); margin: 2px; font-family: var(--aw-font-body);
 }
 
 .code-block {
     background: #1e1e2e; color: #cdd6f4; border-radius: var(--aw-radius-md);
-    padding: 14px; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 11px;
+    padding: 14px; font-family: var(--aw-font-code); font-size: 11px;
     line-height: 1.6; overflow-x: auto; max-height: 300px; overflow-y: auto;
     white-space: pre-wrap; word-break: break-all;
 }
@@ -353,7 +559,7 @@ a { text-decoration: none; color: inherit; }
 .log-source-tag {
     display: inline-flex; padding: 3px 8px; background: var(--aw-hover-subtle);
     border-radius: var(--aw-radius-sm); font-size: 11px; color: var(--aw-text-secondary);
-    margin: 2px;
+    margin: 2px; font-family: var(--aw-font-body);
 }
 
 /* ===================== Empty State ===================== */
@@ -362,18 +568,18 @@ a { text-decoration: none; color: inherit; }
     height: 100%; color: var(--aw-text-muted); text-align: center; padding: 40px;
 }
 .empty-shelf svg { width: 48px; height: 48px; margin-bottom: 16px; opacity: 0.3; }
-.empty-shelf .empty-text { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+.empty-shelf .empty-text { font-size: 14px; font-weight: 500; margin-bottom: 4px; font-family: var(--aw-font-heading); }
 .empty-shelf .empty-hint { font-size: 12px; }
 
 /* ===================== Pagination ===================== */
 .pagination {
     display: flex; align-items: center; justify-content: space-between; padding: 12px 0;
-    font-size: 12px; color: var(--aw-text-muted);
+    font-size: 12px; color: var(--aw-text-muted); font-family: var(--aw-font-body);
 }
 .pagination-buttons { display: flex; gap: 4px; }
 .pagination-btn {
     padding: 6px 10px; border: 1px solid var(--aw-border); border-radius: var(--aw-radius-sm);
-    background: var(--aw-bg-paper); cursor: pointer; font-size: 12px; font-family: inherit;
+    background: var(--aw-bg-paper); cursor: pointer; font-size: 12px; font-family: var(--aw-font-body);
     color: var(--aw-text-secondary); transition: all 0.15s;
 }
 .pagination-btn:hover { border-color: var(--aw-primary-main); color: var(--aw-primary-main); }
@@ -381,41 +587,50 @@ a { text-decoration: none; color: inherit; }
 
 /* ===================== Vulnerability Coverage Tab ===================== */
 .vuln-search-panel {
-    background: var(--aw-bg-paper); border: 1px solid var(--aw-border); border-radius: 12px;
-    padding: 20px; margin-bottom: 20px;
+    background: var(--aw-bg-paper); border: 1px solid var(--aw-border); border-radius: var(--aw-radius-card);
+    padding: 20px; margin-bottom: 20px; box-shadow: var(--aw-shadow-sm);
 }
-.vuln-search-panel h2 { font-size: 16px; font-weight: 600; margin: 0 0 16px 0; }
+/* Portal: MUI Paper elevation 1 */
+[data-theme="portal"] .vuln-search-panel { border: none; box-shadow: var(--aw-shadow-card); }
+.vuln-search-panel h2 { font-size: 16px; font-weight: 600; margin: 0 0 16px 0; font-family: var(--aw-font-heading); }
 .vuln-search-row { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; }
 .vuln-form-group { display: flex; flex-direction: column; gap: 4px; }
-.vuln-form-label { font-size: 11px; font-weight: 600; color: var(--aw-text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.vuln-form-label { font-size: 11px; font-weight: 600; color: var(--aw-text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-family: var(--aw-font-body); }
+/* Portal theme: bold filter labels */
+[data-theme="portal"] .vuln-form-label { font-weight: 700; color: var(--aw-label-bold); }
 .vuln-form-input {
-    padding: 8px 14px; border: 1px solid var(--aw-border); border-radius: var(--aw-radius-md);
-    font-size: 13px; font-family: inherit; background: var(--aw-bg-paper); color: var(--aw-text-primary); outline: none;
+    padding: 8px 14px; border: 1px solid var(--aw-border-input); border-radius: var(--aw-radius-md);
+    font-size: 13px; font-family: var(--aw-font-body); background: var(--aw-bg-paper); color: var(--aw-text-primary); outline: none;
 }
 .vuln-form-input:focus { border-color: var(--aw-active-color); }
+/* Portal: MUI inputs are 16px, 40px height */
+[data-theme="portal"] .vuln-form-input { font-size: 16px; height: 40px; border-radius: 4px; }
+[data-theme="portal"] .vuln-form-select { font-size: 16px; height: 40px; border-radius: 4px; }
 .vuln-form-select {
-    padding: 8px 14px; border: 1px solid var(--aw-border); border-radius: var(--aw-radius-md);
-    font-size: 13px; font-family: inherit; background: var(--aw-bg-paper); color: var(--aw-text-primary); min-width: 150px;
+    padding: 8px 14px; border: 1px solid var(--aw-border-input); border-radius: var(--aw-radius-md);
+    font-size: 13px; font-family: var(--aw-font-body); background: var(--aw-bg-paper); color: var(--aw-text-primary); min-width: 150px;
 }
 .vuln-btn-primary {
     padding: 8px 20px; border-radius: var(--aw-radius-md); border: none;
     background: var(--aw-primary-main); color: #fff; font-size: 13px; font-weight: 500;
-    cursor: pointer; font-family: inherit; transition: background 0.15s;
+    cursor: pointer; font-family: var(--aw-font-body); transition: background 0.15s;
 }
 .vuln-btn-primary:hover { background: var(--aw-primary-dark); }
 .vuln-btn-outline {
     padding: 8px 16px; border-radius: var(--aw-radius-md); border: 1px solid var(--aw-border);
     background: var(--aw-bg-paper); color: var(--aw-text-muted); font-size: 13px;
-    cursor: pointer; font-family: inherit; transition: all 0.15s;
+    cursor: pointer; font-family: var(--aw-font-body); transition: all 0.15s;
 }
 .vuln-btn-outline:hover { border-color: var(--aw-primary-main); color: var(--aw-primary-main); }
 .vuln-filter-row { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
 .vuln-filter-select {
-    padding: 6px 12px; border: 1px solid var(--aw-border); border-radius: var(--aw-radius-md);
-    font-size: 12px; font-family: inherit; background: var(--aw-bg-paper); min-width: 160px;
+    padding: 6px 12px; border: 1px solid var(--aw-border-input); border-radius: var(--aw-radius-md);
+    font-size: 12px; font-family: var(--aw-font-body); background: var(--aw-bg-paper); min-width: 160px;
 }
 .vuln-clear-link { color: var(--aw-primary-main); text-decoration: none; font-size: 12px; cursor: pointer; }
 .vuln-clear-link:hover { text-decoration: underline; }
+/* Portal: links use #23618E, 14px, weight 700, no underline */
+[data-theme="portal"] .vuln-clear-link { color: var(--aw-link-blue); font-size: 14px; font-weight: 700; }
 .cvss-badge {
     display: inline-flex; align-items: center; justify-content: center; min-width: 36px;
     padding: 3px 8px; border-radius: 12px; font-size: 12px; font-weight: 700; color: #fff;
@@ -431,15 +646,39 @@ a { text-decoration: none; color: inherit; }
 .detection-link-badge.has-det {
     background: rgba(var(--aw-success-rgb), var(--aw-tint-opacity)); color: var(--aw-success-main);
 }
+[data-theme="portal"] .detection-link-badge.has-det {
+    background: rgba(129, 202, 114, 0.2); color: #2e7d32;
+}
 .detection-link-badge.no-det {
     background: rgba(var(--aw-error-rgb), 0.08); color: var(--aw-text-muted);
 }
 .vuln-results-header {
     display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;
 }
-.vuln-results-header h2 { font-size: 16px; font-weight: 600; margin: 0; }
+.vuln-results-header h2 { font-size: 16px; font-weight: 600; margin: 0; font-family: var(--aw-font-heading); }
 .vuln-count { font-size: 12px; color: var(--aw-text-muted); }
-.stat-card .accent.purple { background: linear-gradient(90deg, #7b1fa2, #ba68c8); }
+
+/* ===================== Table/Card containers ===================== */
+.table-container {
+    background: var(--aw-bg-paper); border-radius: var(--aw-radius-card);
+    border: 1px solid var(--aw-border); overflow: hidden; box-shadow: var(--aw-shadow-sm);
+}
+/* Portal: MUI DataGrid uses Paper elevation 1, no explicit border */
+[data-theme="portal"] .table-container {
+    border: none; box-shadow: var(--aw-shadow-card);
+}
+
+/* ===================== Info Banner (portal only) ===================== */
+.info-banner {
+    display: none; /* hidden by default */
+    align-items: flex-start; gap: 12px; padding: 12px 16px;
+    background: var(--aw-info-banner-bg); border: 1px solid var(--aw-info-banner-border);
+    border-radius: var(--aw-radius-md); margin-bottom: 20px;
+    font-size: 14px; line-height: 1.5; color: var(--aw-info-main);
+    font-family: var(--aw-font-body);
+}
+[data-theme="portal"] .info-banner { display: flex; }
+[data-theme="v2"] .info-banner { display: none; }
 
 /* ===================== Responsive ===================== */
 @media (max-width: 1200px) {
@@ -452,12 +691,21 @@ a { text-decoration: none; color: inherit; }
 </head>
 <body>
 
+<!-- ===================== THEME TOGGLE BAR ===================== -->
+<div class="theme-toggle-bar">
+    <span class="toggle-label">View Mode:</span>
+    <div class="toggle-group">
+        <button class="toggle-btn active" data-set-theme="portal">Current Portal</button>
+        <button class="toggle-btn" data-set-theme="v2">v2 Prototype</button>
+    </div>
+</div>
+
 <!-- ===================== HEADER ===================== -->
 <header class="aw-header">
     <button class="hamburger">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
     </button>
-    <svg class="header-logo" viewBox="0 0 120 28" fill="none"><text x="0" y="20" font-family="Inter" font-size="16" font-weight="700" fill="#00244C">ARCTIC WOLF</text></svg>
+    <svg class="header-logo" viewBox="0 0 120 28" fill="none"><text x="0" y="20" font-size="16" font-weight="700" fill="#00244C" id="logoText">ARCTIC WOLF</text></svg>
     <div class="sep"></div>
     <span class="header-app-name">Unified Portal</span>
     <div class="right">
@@ -501,10 +749,10 @@ a { text-decoration: none; color: inherit; }
     <div class="page-header">
         <div>
             <div class="page-title">Detection Catalog</div>
-            <div style="font-size:13px;color:var(--aw-text-muted);margin-top:4px;">Coverage for your active integrations</div>
+            <div style="font-size:13px;color:var(--aw-text-muted);margin-top:4px;font-family:var(--aw-font-body);">Coverage for your active integrations</div>
         </div>
         <div style="display:flex;align-items:center;gap:12px;">
-            <div style="font-size:12px;color:var(--aw-text-muted);display:flex;align-items:center;gap:6px;">
+            <div style="font-size:12px;color:var(--aw-text-muted);display:flex;align-items:center;gap:6px;font-family:var(--aw-font-body);">
                 <span style="width:8px;height:8px;background:var(--aw-success-main);border-radius:50%;display:inline-block;animation:pulse 2s infinite;"></span>
                 Updated 2 hours ago
             </div>
@@ -538,6 +786,12 @@ a { text-decoration: none; color: inherit; }
             <div class="stat-label">CVE Coverage</div>
             <div class="stat-value">847</div>
         </div>
+    </div>
+
+    <!-- Info Banner (visible in portal theme) -->
+    <div class="info-banner" id="infoBanner">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        <span>The Detection Catalog is global and includes Sigma rules, stateful rules, batch detections, and a subset of Python v40 detections. Customizations are not supported.</span>
     </div>
 
     <!-- View Tabs -->
@@ -610,7 +864,7 @@ a { text-decoration: none; color: inherit; }
         </div>
 
         <!-- Table -->
-        <div style="background:var(--aw-bg-paper);border-radius:12px;border:1px solid var(--aw-border);overflow:hidden;">
+        <div class="table-container">
             <table class="aw-table">
                 <thead>
                     <tr>
@@ -692,7 +946,7 @@ a { text-decoration: none; color: inherit; }
         </div>
 
         <!-- Results Table -->
-        <div style="background:var(--aw-bg-paper);border-radius:12px;border:1px solid var(--aw-border);overflow:hidden;">
+        <div class="table-container">
             <table class="aw-table">
                 <thead>
                     <tr>
@@ -752,6 +1006,26 @@ a { text-decoration: none; color: inherit; }
 <style>@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }</style>
 
 <script>
+// ===================== THEME TOGGLE =====================
+function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    // Update logo font to match theme
+    var logoText = document.getElementById('logoText');
+    if (logoText) {
+        logoText.setAttribute('font-family', theme === 'portal' ? 'Encode Sans' : 'Inter');
+    }
+    // Update toggle button states
+    document.querySelectorAll('.toggle-btn').forEach(function(btn) {
+        btn.classList.toggle('active', btn.getAttribute('data-set-theme') === theme);
+    });
+}
+
+document.querySelectorAll('.toggle-btn[data-set-theme]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        applyTheme(btn.getAttribute('data-set-theme'));
+    });
+});
+
 // ===================== MOCK DATA =====================
 const TACTICS = [
     { id: 'TA0043', name: 'Reconnaissance', techniques: [
@@ -1127,7 +1401,7 @@ function renderShelf(detection) {
                 ${linkedVulns.map(v => `
                     <div style="padding:10px;border:1px solid var(--aw-border-light);border-radius:var(--aw-radius-md);margin-bottom:6px;cursor:pointer;transition:background 0.15s;" onclick="selectVulnerabilityRow('${v.id}')" onmouseover="this.style.background='var(--aw-hover-item)'" onmouseout="this.style.background=''">
                         <div style="display:flex;justify-content:space-between;align-items:center;">
-                            <span style="font-family:'SF Mono','Fira Code',monospace;font-size:11px;color:var(--aw-primary-main);font-weight:600;">${v.cve}</span>
+                            <span style="font-family:var(--aw-font-code);font-size:11px;color:var(--aw-primary-main);font-weight:600;">${v.cve}</span>
                             <span class="cvss-badge ${getCvssClass(v.cvss)}" style="font-size:10px;padding:2px 6px;">${v.cvss}</span>
                         </div>
                         <div style="font-size:12px;margin-top:3px;">${v.name.substring(0, 50)}${v.name.length > 50 ? '...' : ''}</div>
@@ -1355,7 +1629,7 @@ function renderVulnerabilities() {
                 <div style="font-weight:500;">${v.name}</div>
                 <div style="font-size:11px;color:var(--aw-text-muted);margin-top:2px;">${v.description.substring(0, 80)}...</div>
             </td>
-            <td><span style="font-family:'SF Mono','Fira Code',monospace;font-size:11px;color:var(--aw-primary-main);">${v.cve}</span></td>
+            <td><span style="font-family:var(--aw-font-code);font-size:11px;color:var(--aw-primary-main);">${v.cve}</span></td>
             <td style="font-size:12px;color:var(--aw-text-muted);">${v.source}</td>
             <td style="font-size:12px;">${v.platform}</td>
             <td style="font-size:12px;font-weight:500;color:${v.severity === 'Critical' ? 'var(--aw-severity-critical)' : v.severity === 'High' ? 'var(--aw-severity-high)' : 'var(--aw-text-secondary)'};">${v.severity}</td>
