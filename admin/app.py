@@ -172,6 +172,19 @@ def init_db():
     except sqlite3.OperationalError:
         pass
 
+    # Seed theme assignments for known users (previously hardcoded in template)
+    theme_assignments = {
+        "ckraft": "pokemon",
+        "dschiappa": "ucf",
+        "msetzer": "nohug",
+        "lroush": "cowboys",
+    }
+    for username, theme in theme_assignments.items():
+        db.execute(
+            "UPDATE users SET theme = ? WHERE username = ? AND theme = 'default'",
+            (theme, username),
+        )
+
     # Migrate: add columns to existing dropzone tables
     for col, defn in [("is_report", "INTEGER DEFAULT 0"), ("report_title", "TEXT"),
                        ("category", "TEXT DEFAULT 'Uncategorized'")]:
